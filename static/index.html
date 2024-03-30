@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezolučná metóda</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="../src/resolution-method.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script type="module" src="../dist/bundle.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            loader: {load: ['[tex]/color']},
+            tex: {packages: {'[+]': ['color']}},
+        };
+    </script>
+</head>
+
+<body id="body">
+
+<div id="main">
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div class="modal-header">
+                    <span class="tablink" onclick="openTab(event, 'Všeobecné')">Všeobecné</span>
+                    <span class="tablink" onclick="openTab(event, 'SpecialSymbols')">Špeciálne symboly</span>
+                </div>
+                <div id="Všeobecné" class="tabcontent">
+                    <table>
+                        <tr>
+                            <th>Tlačidlo</th>
+                            <th>Popis</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button id="helpStatic" onclick="event.preventDefault();">
+                                    Help
+                                    <svg fill="#094e86" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" stroke="#094e86"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M14.09 2.233C12.95 1.411 11.518 1 9.794 1c-1.311 0-2.418.289-3.317.868C5.05 2.774 4.292 4.313 4.2 6.483h3.307c0-.633.185-1.24.553-1.828.369-.586.995-.879 1.878-.879.898 0 1.517.238 1.854.713.339.477.508 1.004.508 1.582 0 .504-.252.965-.557 1.383a2.88 2.88 0 0 1-.661.674s-1.793 1.15-2.58 2.074c-.456.535-.497 1.338-.538 2.488-.002.082.029.252.315.252h2.571c.256 0 .309-.189.312-.274.018-.418.064-.633.141-.875.144-.457.538-.855.979-1.199l.91-.627c.822-.641 1.477-1.166 1.767-1.578.494-.676.842-1.51.842-2.5-.001-1.615-.571-2.832-1.711-3.656zM9.741 14.924c-1.139-.035-2.079.754-2.115 1.99-.035 1.234.858 2.051 1.998 2.084 1.189.035 2.104-.727 2.141-1.963.034-1.236-.834-2.076-2.024-2.111z"></path></g></svg>
+                                </button>
+                            </td>
+                            <td>Tlačidlo "Pomoc", zobrazí modálne okno s ďalšími informáciami</td>
+
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="fontSizeSelector"></label><select id="fontSizeSelectorStatic"><option value="18" selected>18px</option></select>
+                            </td>
+                            <td>
+                                Rozbaľovací zoznam, ktorý pomôže upraviť veľkosť textu v editore
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                            <label for="pasteExampleSelector"></label>
+                            <select id="pasteExampleSelectorStatic">
+                                <option value="" disabled selected hidden>Vložiť príklad</option>
+                                <option value="example1">p ∨ ¬p</option>
+                                <option value="example2">(a⇒b)∧a⇒b</option>
+                                <option value="example3">(a⇔b)⇔(a⇔b)</option>
+                                <option value="example4">a, b ⊢ b</option>
+                                <option value="example5">Logické vyplývanie #1</option>
+                                <option value="example6">Logické vyplývanie #2</option>
+                            </select>
+                            </td>
+                            <td>
+                                Zoznam už pripravených formul, ktoré je možné vložiť do editora
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button id="openFileStatic">
+                                    Nahrať formulu
+
+                                    <svg id='download-svg' version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve"
+                                         fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:#094e86;} </style> <g> <polygon class="st0" points="47.916,340.624 166.242,340.624 166.242,512 345.774,512 345.774,340.624 464.1,340.624 256.015,88.146 "></polygon> <rect x="23.574" class="st0" width="464.851" height="72.132"></rect> </g> </g></svg>
+                                </button>
+                            </td>
+                            <td>
+                                Tlačidlo, ktoré pomáha vložiť formulu do editora zo súboru
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="strategiesResolution"></label>
+                                <select id="strategiesResolutionStatic">
+                                    <option value="" disabled selected hidden>Stratégie rezolúcie</option>
+                                    <option value="without-strategy">Bez stratégie</option>
+                                    <option value="linear-resolution">Lineárna rezolúcia</option>
+                                    <option value="unit-resolution">Jednotková rezolúcia</option>
+                                </select>
+                            </td>
+                            <td>
+                                Možnosť vybrať si stratégiu, pomocou ktorej metóda rezolúcie dokáže vzorec
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button id="dimacsStatic">
+                                    DIMACS
+
+                                    <svg id='download-svg' version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve"
+                                         fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:#094e86;} </style> <g> <polygon class="st0" points="47.916,340.624 166.242,340.624 166.242,512 345.774,512 345.774,340.624 464.1,340.624 256.015,88.146 "></polygon> <rect x="23.574" class="st0" width="464.851" height="72.132"></rect> </g> </g></svg>
+                                </button>
+                            </td>
+                            <td>
+                                Možnosť vložiť formulu zo súboru DIMACS CNF
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button id="resolveButtonStatic">
+                                    Dokázať
+
+                                    <svg viewBox="-3 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg"   fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>play</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Icon-Set-Filled" transform="translate(-419.000000, -571.000000)" fill="#ffffff"> <path d="M440.415,583.554 L421.418,571.311 C420.291,570.704 419,570.767 419,572.946 L419,597.054 C419,599.046 420.385,599.36 421.418,598.689 L440.415,586.446 C441.197,585.647 441.197,584.353 440.415,583.554" id="play"> </path> </g> </g> </g></svg>
+                                </button>
+                            </td>
+                            <td>
+                                Tlačidlo, ktoré spustí dôkaz formuly
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div id="SpecialSymbols" class="tabcontent">
+                    <table id="special-symbols-table">
+                        <tr style="background-color: #094e86; color: white;">
+                            <th>Zápis LaTeX</th>
+                            <th>Špeciálny symbol</th>
+                        </tr>
+                        <tr>
+                            <td>\wedge</td>
+                            <td>∧</td>
+                        </tr>
+                        <tr>
+                            <td>\vee</td>
+                            <td>∨</td>
+                        </tr>
+                        <tr>
+                            <td>\neg</td>
+                            <td>¬</td>
+                        </tr>
+                        <tr>
+                            <td>\Rightarrow</td>
+                            <td>⇒</td>
+                        </tr>
+                        <tr>
+                            <td>\Leftrightarrow</td>
+                            <td>⇔</td>
+                        </tr>
+                        <tr>
+                            <td>\alpha</td>
+                            <td>α</td>
+                        </tr>
+                        <tr>
+                            <td>\beta</td>
+                            <td>β</td>
+                        </tr>
+                        <tr>
+                            <td>\gamma</td>
+                            <td>γ</td>
+                        </tr>
+                        <tr>
+                            <td>\delta</td>
+                            <td>δ</td>
+                        </tr>
+                        <tr>
+                            <td>\epsilon</td>
+                            <td>ε</td>
+                        </tr>
+                        <tr>
+                            <td>\zeta</td>
+                            <td>ζ</td>
+                        </tr>
+                        <tr>
+                            <td>\eta</td>
+                            <td>η</td>
+                        </tr>
+                        <tr>
+                            <td>\theta</td>
+                            <td>θ</td>
+                        </tr>
+                        <tr>
+                            <td>\iota</td>
+                            <td>ι</td>
+                        </tr>
+                        <tr>
+                            <td>\kappa</td>
+                            <td>κ</td>
+                        </tr>
+                        <tr>
+                            <td>\lambda</td>
+                            <td>λ</td>
+                        </tr>
+                        <tr>
+                            <td>\mu</td>
+                            <td>μ</td>
+                        </tr>
+                        <tr>
+                            <td>\xi</td>
+                            <td>ξ</td>
+                        </tr>
+                        <tr>
+                            <td>\omicron</td>
+                            <td>ο</td>
+                        </tr>
+                        <tr>
+                            <td>\pi</td>
+                            <td>π</td>
+                        </tr>
+                        <tr>
+                            <td>\rho</td>
+                            <td>ρ</td>
+                        </tr>
+                        <tr>
+                            <td>\sigma</td>
+                            <td>σ</td>
+                        </tr>
+                        <tr>
+                            <td>\tau</td>
+                            <td>τ</td>
+                        </tr>
+                        <tr>
+                            <td>\upsilon</td>
+                            <td>υ</td>
+                        </tr>
+                        <tr>
+                            <td>\phi</td>
+                            <td>φ</td>
+                        </tr>
+                        <tr>
+                            <td>\chi</td>
+                            <td>χ</td>
+                        </tr>
+                        <tr>
+                            <td>\psi</td>
+                            <td>ψ</td>
+                        </tr>
+                        <tr>
+                            <td>\omega</td>
+                            <td>ω</td>
+                        </tr>
+                        <tr>
+                            <td>\bot</td>
+                            <td>⊥</td>
+                        </tr>
+                        <tr>
+                            <td>\top</td>
+                            <td>⊤</td>
+                        </tr>
+                        <tr>
+                            <td>\line</td>
+                            <td>---------------</td>
+                        </tr>
+                        <tr>
+                            <td>\vdash</td>
+                            <td>⊢</td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+
+    <div id="first-half">
+    <div id="editing-buttons">
+        <button id="help">
+            Help
+
+            <svg fill="#094e86" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" stroke="#094e86"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M14.09 2.233C12.95 1.411 11.518 1 9.794 1c-1.311 0-2.418.289-3.317.868C5.05 2.774 4.292 4.313 4.2 6.483h3.307c0-.633.185-1.24.553-1.828.369-.586.995-.879 1.878-.879.898 0 1.517.238 1.854.713.339.477.508 1.004.508 1.582 0 .504-.252.965-.557 1.383a2.88 2.88 0 0 1-.661.674s-1.793 1.15-2.58 2.074c-.456.535-.497 1.338-.538 2.488-.002.082.029.252.315.252h2.571c.256 0 .309-.189.312-.274.018-.418.064-.633.141-.875.144-.457.538-.855.979-1.199l.91-.627c.822-.641 1.477-1.166 1.767-1.578.494-.676.842-1.51.842-2.5-.001-1.615-.571-2.832-1.711-3.656zM9.741 14.924c-1.139-.035-2.079.754-2.115 1.99-.035 1.234.858 2.051 1.998 2.084 1.189.035 2.104-.727 2.141-1.963.034-1.236-.834-2.076-2.024-2.111z"></path></g></svg>
+        </button>
+        <label for="fontSizeSelector"></label><select id="fontSizeSelector">
+        <option value="12">12px</option>
+        <option value="18" selected>18px</option>
+        <option value="24">24px</option>
+        <option value="36">36px</option>
+        <option value="48">48px</option>
+
+        </select>
+
+        <label for="pasteExampleSelector"></label>
+        <select id="pasteExampleSelector">
+            <option value="" disabled selected hidden>Vložiť príklad</option>
+            <option value="example1">p ∨ ¬p</option>
+            <option value="example2">(a⇒b)∧a⇒b</option>
+            <option value="example3">(a⇔b)⇔(a⇔b)</option>
+            <option value="example4">a, b ⊢ b</option>
+            <option value="example5">Logické vyplývanie #1</option>
+            <option value="example6">Logické vyplývanie #2</option>
+        </select>
+
+        <input type="file" id="fileInput" style="display: none;" />
+        <button id="openFile">
+            Nahrať formulu
+
+            <svg id='download-svg' version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve"
+                 fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:#094e86;} </style> <g> <polygon class="st0" points="47.916,340.624 166.242,340.624 166.242,512 345.774,512 345.774,340.624 464.1,340.624 256.015,88.146 "></polygon> <rect x="23.574" class="st0" width="464.851" height="72.132"></rect> </g> </g></svg>
+        </button>
+
+        <label for="strategiesResolution"></label>
+        <select id="strategiesResolution">
+            <option value="" disabled selected hidden>Stratégie rezolúcie</option>
+            <option value="without-strategy">Bez stratégie</option>
+            <option value="linear-resolution">Lineárna rezolúcia</option>
+            <option value="unit-resolution">Jednotková rezolúcia</option>
+        </select>
+
+        <input type="file" id="dimacsInput" style="display:none" />
+        <button id="dimacs">
+            DIMACS
+
+            <svg id='download-svg' version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xml:space="preserve"
+                 fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:#094e86;} </style> <g> <polygon class="st0" points="47.916,340.624 166.242,340.624 166.242,512 345.774,512 345.774,340.624 464.1,340.624 256.015,88.146 "></polygon> <rect x="23.574" class="st0" width="464.851" height="72.132"></rect> </g> </g></svg>
+        </button>
+
+
+        <div id="errorModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" id="closeErrorModal">&times;</span>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div id="input-field">
+        <div id="resolve-and-editor">
+                <div id="monaco-editor-container">
+                    <div id="monaco-editor"></div>
+                    <div id="vertical-resizer" style="height: 5px; cursor: ns-resize; position: relative;">
+                            <div class="horizontalLine" style="height: 1px; width: 10%; background: rgb(255, 255, 255); position: absolute; left: 44%; top: 50%; transform: translateY(-50%);"></div>
+                        </div>
+                </div>
+
+            <div id="testtest">
+                <div id="keyboard-container" style="display: none;">
+                    <button class="keyboard-button" data-value="φ">\(\phi\)</button>
+                    <button class="keyboard-button" data-value="θ">\(\theta\)</button>
+                    <button class="keyboard-button" data-value="ψ">\(\psi\)</button>
+                    <button class="keyboard-button" data-value="∧">\(\land\)</button>
+                    <button class="keyboard-button" data-value="∨">\(\lor\)</button>
+                    <button class="keyboard-button" data-value="¬">\(\neg\)</button>
+                    <button class="keyboard-button" data-value="⇒">\(\Rightarrow\)</button>
+                    <button class="keyboard-button" data-value="⇔">\(\Leftrightarrow\)</button>
+                    <button class="keyboard-button" data-value="(">(</button>
+                    <button class="keyboard-button" data-value=")">)</button>
+                </div>
+
+                <input id="c1" type="checkbox">
+                <label for="c1">Formula je už negovaná</label>
+            </div>
+
+            <div id="klavesnica">
+                <div id="text">
+                    <button id="resolveButton" disabled>
+                        Dokázať
+
+                        <svg viewBox="-3 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg"   fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>play</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Icon-Set-Filled" transform="translate(-419.000000, -571.000000)" fill="#ffffff"> <path d="M440.415,583.554 L421.418,571.311 C420.291,570.704 419,570.767 419,572.946 L419,597.054 C419,599.046 420.385,599.36 421.418,598.689 L440.415,586.446 C441.197,585.647 441.197,584.353 440.415,583.554" id="play"> </path> </g> </g> </g></svg>
+                    </button>
+                </div>
+                    <svg id='keyboard-icon' viewBox="0 0 24 24" fill='none' xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path opacity="0.1" d="M17 6C18.8856 6 19.8284 6 20.4142 6.58579C21 7.17157 21 8.11438 21 10L21 12L21 14C21 15.8856 21 16.8284 20.4142 17.4142C19.8284 18 18.8856 18 17 18L12 18L7 18C5.11438 18 4.17157 18 3.58579 17.4142C3 16.8284 3 15.8856 3 14L3 12L3 10C3 8.11438 3 7.17157 3.58579 6.58579C4.17157 6 5.11438 6 7 6L12 6L17 6Z" fill="#d6d6d6"></path> <path d="M10 14L14 14" stroke="#d6d6d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M17.5 10L17.5 10.01" stroke="#d6d6d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14 9.99L14 10" stroke="#d6d6d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M17.5 13.99L17.5 14" stroke="#d6d6d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.5 14L6.5 14.01" stroke="#d6d6d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M10 10L10 10.01" stroke="#d6d6d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.5 10L6.5 10.01" stroke="#d6d6d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M17 6C18.8856 6 19.8284 6 20.4142 6.58579C21 7.17157 21 8.11438 21 10L21 12L21 14C21 15.8856 21 16.8284 20.4142 17.4142C19.8284 18 18.8856 18 17 18L16 18L8 18L7 18C5.11438 18 4.17157 18 3.58579 17.4142C3 16.8284 3 15.8856 3 14L3 12L3 10C3 8.11438 3 7.17157 3.58579 6.58579C4.17157 6 5.11438 6 7 6L8 6L16 6L17 6Z" stroke="#d6d6d6" stroke-width="2" stroke-linejoin="round"></path> </g></svg>
+
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+
+    <div id="myModalDIMACS" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeDimacs">&times;</span>
+            <pre id="modalText"></pre>
+            <button id="copyButton" title="Skopírovať do schránky">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z" stroke="#094e86" stroke-width="1.5"></path> <path d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5" stroke="#094e86" stroke-width="1.5"></path> </g></svg>
+                <span class="tooltiptext">Kopírovanie úspešné!</span>
+            </button>
+        </div>
+    </div>
+
+
+
+    <div id="error-message"></div>
+
+
+    <div id="result-interpretation" style="visibility: hidden">
+        <div id="negation-formula">
+            <p id="description-formula"></p>
+            <div id="negated-formula"></div>
+        </div>
+        <div id="cnf-result">
+            <p id="description-cnf"></p>
+            <div id="cnf-formula"></div>
+        </div>
+        <div id="clauses-result">
+            <p id="description-clauses"></p>
+            <div id="clauses"></div>
+            <div id="dimacs-export">
+                <button id="export-dimacs">DIMACS CNF</button>
+            </div>
+        </div>
+    </div>
+    <div id="steps-explanation" style="visibility: hidden">
+        <div id="resolution-result"></div>
+        <div id="cut-button">
+            <div class="dotted-line-background" style="visibility: hidden">&nbsp;</div>
+            <button id="toggleVisibilityButton">Zobraziť kroky</button>
+            <div class="dotted-line-background" style="visibility: hidden">&nbsp;</div>
+        </div>
+
+        <div id="resolution-container" style="display: none;"></div>
+
+        <div id='download-buttons'>
+            <div id="download-svg-button"></div>
+            <div id="download-latex-button"></div>
+        </div>
+
+        <div class="Tree">
+            <div class="Tree-item Tree-item--top">&nbsp;</div>
+            <div id="tree-container" style="display: none;"></div>
+            <div class="Tree-item Tree-item--bottom">&nbsp;</div>
+        </div>
+    </div>
+</div>
+
+<div id="divider"></div>
+
+
+<div id="second-half">
+    <div id="stepByStepResolution" style="display: none;">
+        <div id="currentClausesContainer">
+            <h3>Aktuálny zoznam klauzúl:</h3>
+            <div id="currentClauses"></div>
+        </div>
+        <div id="interactive-buttons">
+            <button id="toggleHistory">História</button>
+            <button id="undo">Undo</button>
+            <button id="redo">Redo</button>
+            <button id="download-btn-dynamic">Stiahnuť SVG</button>
+        </div>
+
+        <div id="messagesContainer"></div>
+
+
+        <div id="bar-options">
+            <div class="toggle-container">
+                <div id="">
+                    <label>
+                        <input type="radio" id="tree-option" name="mode" value="tree" checked="">
+                        <span id="toggle-tree">Strom</span>
+                    </label>
+                    <label>
+                        <input type="radio" id="table-option" name="mode" value="table">
+                        <span id="toggle-table">Tabuľka</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="interactive-resolution-input">
+            <div id="interactive-clauses">
+                <label for="clause1"></label><select id="clause1"></select>
+                <label for="clause2"></label><select id="clause2"></select>
+            </div>
+            <div class="line"></div>
+            <div id="visualization-result"></div>
+            <button id="applyResolutionButton">Použiť pravidlo rezolúcie</button>
+
+        </div>
+
+        <div id="history"></div>
+
+        <div class="Dynamic-Tree">
+            <div class="Dynamic-Tree-item Dynamic-Tree-item--top">&nbsp;</div>
+            <div id="dynamic-tree-container"></div>
+            <div class="Dynamic-Tree-item Dynamic-Tree-item--bottom">&nbsp;</div>
+        </div>
+
+        <div id="table-resolution-interpretation">
+
+        </div>
+
+    </div>
+</div>
+
+</div>
+
+</body>
+</html>

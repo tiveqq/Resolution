@@ -1,0 +1,1351 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Fira Sans", sans-serif;
+    background-color: #f5f5f5;
+}
+
+#main {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#first-half {
+    width: 50%;
+    box-sizing: border-box;
+    padding: 16px;
+}
+
+#second-half {
+    width: 50%;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 16px;
+}
+
+#input-field {
+    margin-left: 24px;
+}
+
+@media (max-width: 1400px) {
+    #first-half, #second-half {
+        width: 100%;
+        padding: 0;
+    }
+
+    #input-field {
+        margin-left: 0;
+    }
+
+
+    #help-and-editor {
+        position: relative;
+        justify-content: center;
+    }
+
+    #result-interpretation {
+        margin-right: 3.3%;
+    }
+
+    #steps-explanation {
+        margin-right: 3.3%;
+        margin-bottom: 3.3%;
+    }
+
+    #currentClausesContainer {
+        margin-left: 3.3%;
+        margin-right: 3.3%;
+        text-align: center;
+    }
+
+    #interactive-buttons {
+        text-align: center;
+    }
+
+    #divider {
+        visibility: hidden;
+    }
+
+    #editing-buttons {
+        text-align: center;
+    }
+
+    #keyboard-icon {
+        display: block;
+        position: inherit;
+    }
+
+
+    #text {
+        display: flex;
+        text-align: center;
+    }
+
+    #resolve-and-editor {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #keyboard-container {
+        margin: auto;
+    }
+
+    #monaco-editor-container {
+    }
+}
+
+#interactive-buttons {
+    display: block;
+}
+
+
+#result-interpretation {
+    background-color: white;
+    border-radius: 10px;
+    padding: 8px;
+    margin-left: 3.3%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#description-formula, #description-clauses, #description-cnf, #resolution-result {
+    margin-left: 3%;
+    color: #333;
+    line-height: 1.5;
+}
+
+#messagesContainer .message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    color: #fff;
+}
+
+.message-info {
+    background-color: #31708f;
+}
+
+
+.message-error {
+    background-color: #861809;
+}
+
+.message-warning {
+    background-color: #09866B
+}
+
+.Tree {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tree-container {
+    max-width: 50%;
+}
+
+.Tree-item--top {
+    align-self: flex-start;
+}
+
+.Tree-item--bottom {
+    align-self: flex-end;
+}
+
+.Dynamic-Tree {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#dynamic-tree-container {
+    max-width: 50%;
+}
+
+.Dynamic-Tree-item--top {
+    align-self: flex-start;
+}
+
+.Dynamic-Tree-item--bottom {
+    align-self: flex-end;
+}
+
+#description-formula strong, #description-cnf strong, #description-clauses strong {
+    color: #094e86;
+}
+
+#toggleVisibilityButton {
+    cursor: pointer;
+    background-color: #094e86;
+    font-weight: bold;
+    font-size: 17px;
+    border-radius: 6px;
+    transition: background-color 0.1s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: white;
+    border: none;
+    padding: 14px;
+    text-align: center;
+    max-width: 600px;
+    margin-top: -12px;
+    margin-bottom: 20px;
+    width: 35%;
+}
+
+#toggleVisibilityButton:hover {
+    background-color: #073c68;
+}
+
+#table-resolution-interpretation {
+    display: flex;
+    justify-content: center;
+}
+
+.resolution-table {
+    margin-top: 40px;
+    width: 50%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+.resolution-table th,
+.resolution-table td {
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 1px solid #dddddd;
+}
+
+.resolution-table th {
+    background-color: #094e86;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.resolution-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.resolution-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.resolution-table td {
+    position: relative;
+}
+
+.resolution-table td::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background-color: #3498db;
+    display: none;
+}
+
+/* Стиль для выделенной ячейки (пример) */
+.resolution-table td.highlight::before {
+    display: block;
+}
+
+
+#clause1, #clause2 {
+    margin-bottom: 5px;
+}
+
+select {
+    width: 100%;
+    padding: 8px 18px;
+    margin-bottom: 10px;
+    font-size: 17px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+    background-color: #f8f8f8;
+    color: #333;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#interactive-clauses {
+    display: flex;
+}
+
+select:hover {
+    border-color: #888;
+}
+
+select:focus {
+    outline: none;
+    border-color: #095e86;
+    box-shadow: 0 0 0 2px rgba(9,94,134,0.2);
+}
+
+select {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px top 50%;
+    background-size: 12px;
+}
+
+
+#history {
+    position: fixed;
+    right: -100%;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background: #f9f9f9;
+    transition: right 0.5s;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+}
+
+
+
+#toggleVisibilityButton:hover {
+    background-color: #052948;
+}
+
+.line-cut {
+    height: 1px;
+    background-color: #ccc;
+    margin: 10px 0;
+    width: 100%;
+}
+
+#toggleVisibilityButton:active {
+    background-color: #042c49;
+}
+
+.dotted-line-background {
+    background-image: linear-gradient(to right, #094e86 60%, rgba(255, 255, 255, 0) 0);
+    background-position: center;
+    background-size: 12px 2px;
+    background-repeat: repeat-x;
+    flex-grow: 1;
+    margin-bottom: 30px;
+    background-position-x: 50%;
+    background-position-y: 50%;
+}
+
+#cut-button {
+    display: flex;
+}
+
+#steps-explanation {
+    display: grid;
+    background-color: white;
+    border-radius: 10px;
+    padding: 1px;
+    margin-left: 3.3%;
+    margin-top: 3.3%;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+}
+
+.input-group {
+    display: flex;
+    width: 223px
+}
+
+#keyboard-container {
+    display: inline-flex;
+    justify-content: end;
+    flex-wrap: wrap;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    width: 430px;
+    margin: 10px auto auto;
+}
+
+#help-icon {
+    width: 35px;
+    color: #0517a4;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+#help-icon:hover path {
+    fill: #e1efff;
+}
+
+.close:hover {
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 70%;
+}
+
+.help-section {
+    color: #062f50;
+}
+
+.keyboard-button {
+    background-color: #094e86;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 35px;
+    height: 44px;
+}
+
+.keyboard-button:hover {
+    background-color: #073c68;
+}
+
+#help-and-editor {
+    display: flex;
+    align-items: flex-start;
+}
+
+.input-formula {
+    padding: 11px;
+    font-size: 16px;
+    max-width: 600px;
+    transition: border-color 0.3s ease;
+    flex-grow: 1;
+    display: flex;
+    border-radius: 6px;
+    background: #fbfbfb;
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 1px #dddddd, 0 2px 4px 0 rgb(0 0 0 / 7%), 0 1px 1.5px 0 rgb(0 0 0 / 5%);
+}
+
+.input-formula:focus {
+    -webkit-box-shadow: #094e86;
+    box-shadow: 0 0 0 1px #dddddd, 0 2px 4px 0 rgb(0 0 0 / 7%), 0 1px 1.5px 0 rgb(0 0 0 / 5%);
+    border: 2px solid #094e86;
+    border-radius: 4px;
+}
+
+#formulaInputContainer {
+    text-align: left;
+    margin-left: 25px;
+    margin-top: 10px;
+}
+
+#keyboard-icon {
+    width: 35px;
+    color: #0517a4;
+    cursor: pointer;
+    margin-left: 20px;
+}
+
+#klavesnica {
+    display: flex;
+}
+
+#divider {
+    position: absolute;
+    z-index: 50;
+    height: 100%;
+    background-color: #ececec;
+    width: 9px;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%);
+    cursor: col-resize;
+    border-radius: 15px;
+}
+
+#divider:hover {
+    background-color: #e5e3e3;
+}
+
+#logicalImplicationInputContainer {
+
+    margin-left: 25px;
+}
+
+#currentClausesContainer {
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#currentClausesContainer h3 {
+    color: #094e86;
+    margin-bottom: 16px;
+}
+
+#currentClauses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.clause-card {
+    background-color: rgba(245, 245, 245, 0.38);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+}
+
+
+#resolution-result {
+    font-size: 18px;
+    line-height: 1.6;
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 600px;
+    margin: 20px auto;
+
+}
+
+:root {
+    --keyboard-icon-color: #d5d5d5;
+}
+
+#keyboard-icon path {
+    stroke: var(--keyboard-icon-color);
+    transition: stroke 0.3s ease;
+}
+
+
+#conclusion {
+    display: flex;
+}
+
+.tablink {
+    font-weight: bold;
+    font-size: 20px;
+    color: grey;
+    padding: 3px;
+    cursor: pointer;
+}
+
+.tablink.active {
+    color: #094e86;
+}
+
+#resolveButton, #resolveButtonStatic {
+    border: none;
+    cursor: pointer;
+    padding: 14px;
+    background-color: #094e86;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 6px;
+    transition: background-color 0.1s ease;
+    margin-top: 5px;
+    position: relative;
+}
+
+#resolveButtonStatic {
+    margin-left: 26px;
+}
+
+#resolveButton:disabled {
+    background-color: rgba(9, 78, 134, 0.4);
+    cursor: not-allowed;
+}
+
+#resolveButton:active {
+    background-color: #042c49;
+}
+
+#resolveButton:hover, #resolveButtonStatic:hover {
+    background-color: #073c68;
+}
+
+
+#resolveButtonLogical {
+    border: none;
+    cursor: pointer;
+    padding: 14px;
+    background-color: #094e86;
+    border-radius: 6px;
+    transition: background-color 0.1s ease;
+    margin-left: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+#toggleHistory, #undo, #redo, #download-btn-dynamic {
+    width: 20%;
+    border: none;
+    cursor: pointer;
+    padding: 14px;
+    background-color: #094e86;
+    margin-top: 15px;
+    font-size: 14px;
+    color: white;
+    border-radius: 9px;
+    transition: background-color 0.1s ease;
+}
+
+#toggleHistory:hover, #undo:hover, #redo:hover, #download-btn-dynamic:hover {
+    background-color: #073c68;
+}
+
+#download-latex-button {
+    width: 13px;
+}
+
+:focus {
+    outline: 0;
+    border-color: #094e86;
+    box-shadow: 0 0 0 4px #b5c9fc;
+}
+
+.toggle-container div {
+    display: flex;
+    margin-bottom: 1.2rem;
+    justify-content: left;
+    margin-left: 25px;
+    font-weight: bold;
+}
+
+#toggle-tree {
+    width: 74px;
+}
+
+#toggle-table {
+    width: 74px;
+}
+
+#bar-options {
+    display: flex;
+    justify-content: center;
+    margin-right: 20px;
+    margin-top: 10px;
+}
+
+.toggle-container input[type="radio"] {
+    clip: rect(0 0 0 0);
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+}
+
+.toggle-container input[type="radio"]:checked + span {
+    box-shadow: 0 0 0 0.0625em #094e86;
+    background-color: #dee7ff;
+    z-index: 1;
+    color: #094e86;
+}
+
+
+
+#download-btn, #latex-tree-generate {
+    width: 1px;
+    background-color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#download-btn svg, #latex-tree-generate svg {
+    height: 40px;
+    margin-top: 3px;
+    margin-bottom: -25px;
+}
+
+#download-btn:hover path {
+    fill: #073c68;
+}
+
+#latex-tree-generate:hover path {
+    fill: #073c68;
+
+}
+
+#applyResolutionButton {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    padding: 14px;
+    background-color: #094e86;
+    font-weight: bold;
+    margin-top: 4px;
+    font-size: 14px;
+    color: white;
+    border-radius: 9px;
+    transition: background-color 0.1s ease;
+}
+
+#download-btn, #latex-tree-generate {
+    margin: auto 130px 15px auto;
+}
+
+
+#download-svg-button {
+    display: flex;
+    justify-content: flex-end;
+}
+
+
+#applyResolutionButton:active {
+    background-color: #042c49;
+}
+
+#applyResolutionButton:hover {
+    background-color: #073c68;
+}
+
+#resolveButtonLogical:disabled {
+    background-color: rgba(9, 78, 134, 0.4);
+    cursor: not-allowed;
+}
+
+#resolveButtonLogical:active {
+    background-color: #042c49;
+}
+
+#resolveButtonLogical:hover {
+    background-color: #073c68;
+}
+
+.logical-buttons {
+    border: none;
+    cursor: pointer;
+    padding: 7px;
+    width: 110px;
+    background-color: #094e86;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.logical-buttons:disabled {
+    background-color: rgba(9, 78, 134, 0.4);
+    cursor: not-allowed;
+}
+
+.logical-buttons:active {
+    background-color: #042c49;
+}
+
+.logical-buttons:hover {
+    background-color: #073c68;
+}
+
+#error-message {
+    margin-top: 20px;
+    margin-left: 20px;
+    color: red;
+}
+
+#negated-formula, #cnf-formula, #clauses {
+    display: flex;
+    justify-content: center;
+}
+
+.error-tooltip {
+    position: absolute;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.link {
+    fill: none;
+    stroke: #000;
+    stroke-width: 1px;
+}
+
+.node circle {
+    fill: #fff;
+    stroke: #000;
+    stroke-width: 1px;
+}
+
+.node text {
+    font: 12px sans-serif;
+}
+
+.node--internal circle {
+    fill: #ffffff;
+}
+
+.node--leaf circle {
+    fill: #fff;
+}
+
+.resolution-step {
+    display: flex;
+    margin: auto;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.clause {
+    display: inline-block;
+    margin: 5px 5px -15px;
+    padding: 5px;
+}
+
+.clause, .line, .step-title {
+    white-space: nowrap;
+}
+
+.line {
+    border-top: 2px solid black;
+    width: 100%;
+}
+
+.result {
+    text-align: center;
+}
+
+#interactive-resolution-input {
+    display: table;
+    margin: 10px auto auto;
+}
+
+#visualization-result {
+    text-align: center;
+}
+
+#dynamicInputFields {
+    display: inline-grid;
+}
+
+:focus {
+    outline: 0;
+    border-color: #094e86;
+    box-shadow: 0 0 0 4px #b5c9fc;
+}
+
+.toggle-container div {
+    display: flex;
+    margin-bottom: 1.2rem;
+    font-weight: bold;
+}
+
+.toggle-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-right: 5px;
+}
+
+#toggle-formula {
+    width: 77px;
+}
+
+.toggle-container input[type="radio"] {
+    clip: rect(0 0 0 0);
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+}
+
+#help:hover, #helpStatic {
+    background-color: #e1efff;
+}
+
+#help svg, #helpStatic svg {
+    width: 20px;
+    height: 15px;
+    margin-left: 6px;
+}
+
+.modal {
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 3% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 70%;
+}
+
+#special-symbols-table {
+    border-radius: 8px;
+}
+
+#download-buttons {
+    display: flex;
+    justify-content: end;
+}
+
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+#export-dimacs {
+    display: flex;
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+    padding: 7px;
+    background-color: #094e86;
+    font-weight: bold;
+    margin-top: 4px;
+    font-size: 12px;
+    color: white;
+    border-radius: 9px;
+    transition: background-color 0.1s ease;
+}
+
+#dimacs-export {
+    display: flex;
+    justify-content: end;
+}
+
+#copyButton {
+    position: relative;
+    display: inline-block;
+    width: 1px;
+    background-color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#copyButton svg {
+    width: 25px
+
+}
+
+#copyButton:hover svg path  {
+    stroke: #042c49;
+}
+
+.tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#copyButton:hover .tooltiptext {
+    opacity: 1;
+}
+
+#export-dimacs:active {
+    background-color: #042c49;
+}
+
+#export-dimacs:hover {
+    background-color: #073c68;
+}
+
+#openFile, #help, #dimacs, #helpStatic, #openFileStatic, #dimacsStatic  {
+    width: 190px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px;
+    border: 2px solid #094e86;
+    background-color: white;
+    color: #094e86;
+    font-weight: bold;
+    font-size: 17px;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    margin: 10px 0 10px 24px;
+}
+
+#help, #helpStatic {
+    width: 100px;
+}
+
+#dimacs, #dimacsStatic {
+    width: 130px
+}
+
+#openFile:hover, #dimacs:hover, #openFileStatic:hover, #dimacsStatic:hover {
+    background-color: #e1efff;
+}
+
+#openFile svg, #dimacs svg, #openFileStatic svg, #dimacsStatic svg {
+    width: 20px;
+    height: 15px;
+    margin-left: 10px;
+}
+
+#c1 {
+    opacity: 0;
+    position: absolute;
+}
+
+#c1 + label {
+    position: relative;
+    padding-left: 25px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #094e86;
+    display: inline-block;
+    font-weight: bold;
+    margin: 15px 0 15px 0px;
+    user-select: none;
+    transition: color 0.2s;
+
+}
+
+#c1 + label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    border: 2px solid #094e86;
+    border-radius: 4px;
+    transition: border-color 0.2s;
+
+}
+
+#c1 + label::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 4px;
+    width: 9px;
+    height: 9px;
+    background-color: transparent;
+    border-radius: 2px;
+    transition: background-color 0.3s;
+}
+
+#c1:checked + label::after {
+    background-color: #094e86;
+}
+
+#c1:focus + label::after {
+    box-shadow: 0 0 0 3px rgba(9, 78, 134, 0.5);
+}
+
+#c1:disabled + label {
+    color: #aaa;
+}
+
+#c1:disabled + label:before {
+    border-color: #aaa;
+}
+
+
+#testtest {
+    display: contents;
+}
+
+#resolveButton svg, #resolveButtonStatic svg {
+    width: 20px;
+    height: 10px;
+    margin-left: 10px;
+}
+
+select#pasteExampleSelector, select#strategiesResolution, select#pasteExampleSelectorStatic, select#strategiesResolutionStatic {
+    width: 220px;
+    padding: 10px;
+    border: 2px solid #094e86;
+    background-color: white;
+    color: #094e86;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    margin: 10px 0 10px 24px;
+}
+
+
+select#fontSizeSelector, select#fontSizeSelectorStatic {
+    width: 80px;
+    padding: 10px;
+    border: 2px solid #094e86;
+    background-color: white;
+    color: #094e86;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    margin: 10px 0 10px 24px;
+}
+
+select#fontSizeSelector option, select#pasteExampleSelector option, select#strategiesResolution option, select#fontSizeSelectorStatic, select#pasteExampleSelectorStatic, select#strategiesResolutionStatic  {
+    padding: 5px;
+    background-color: #f7f7f7;
+    color: #094e86;
+}
+
+select#fontSizeSelector:hover, select#strategiesResolution:hover, select#pasteExampleSelector:hover, select#fontSizeSelectorStatic:hover, select#pasteExampleSelectorStatic:hover, select#strategiesResolutionStatic:hover {
+    background-color: #e1efff;
+}
+
+select#fontSizeSelector:focus, select#strategiesResolution:focus, select#fontSizeSelectorStatic:focus, select#pasteExampleSelectorStatic:focus, select#strategiesResolutionStatic:focus {
+    border-color: #073c64;
+}
+
+
+.toggle-container input[type="radio"]:checked + span {
+    box-shadow: 0 0 0 0.0625em #094e86;
+    background-color: #dee7ff;
+    z-index: 1;
+    color: #094e86;
+}
+
+.modal-header button {
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: background-color 0.3s;
+}
+
+.modal-header button:hover {
+    background-color: #ddd;
+}
+
+.tabcontent {
+    display: none;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #094e86;
+    color: white;
+}
+
+label span {
+    display: block;
+    cursor: pointer;
+    background-color: #fff;
+    padding: 0.375em .75em;
+    position: relative;
+    margin-left: .0625em;
+    box-shadow: 0 0 0 0.0625em #b5bfd9;
+    letter-spacing: .05em;
+    color: #3e4963;
+    text-align: center;
+    transition: background-color .5s ease;
+}
+
+label:first-child span {
+    border-radius: .375em 0 0 .375em;
+}
+
+label:last-child span {
+    border-radius: 0 .375em .375em 0;
+}
+
+#negation-explanation {
+    justify-content: center;
+}
+
+#monaco-editor {
+    height: 200px;
+    border: 2px solid #094e86;
+}
+
+#monaco-editor-container {
+    display: block;
+    width: 100%;
+}
+
+#monaco-editor {
+    flex-grow: 1;
+    border-right: 2px solid #000;
+}
+
+#resizer {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 5px;
+    margin-left: 10px;
+    border-radius: 3px;
+    cursor: ew-resize;
+    background-color: rgb(134, 134, 134);
+}
+
+#resizer-and-editor {
+    display: block;
+    width:100%;
+}
+
+#vertical-resizer {
+    display: block;
+    box-sizing: border-box;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 50%;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    margin:  auto auto;
+    cursor: ew-resize;
+    background-color: #094e86;
+}
+
+#size-slider {
+    margin: 10px;
+}
+
+.select-menu {
+    max-width: 330px;
+    margin: 50px auto;
+}
+.select-menu .select-btn {
+    display: flex;
+    height: 55px;
+    background: #fff;
+    padding: 20px;
+    font-size: 18px;
+    font-weight: 400;
+    border-radius: 8px;
+    align-items: center;
+    cursor: pointer;
+    justify-content: space-between;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+.select-menu .options {
+    position: absolute;
+    width: 330px;
+    overflow-y: auto;
+    max-height: 295px;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    animation-name: fadeInDown;
+    -webkit-animation-name: fadeInDown;
+    animation-duration: 0.35s;
+    animation-fill-mode: both;
+    -webkit-animation-duration: 0.35s;
+    -webkit-animation-fill-mode: both;
+}
+.select-menu .options .option {
+    display: flex;
+    height: 55px;
+    cursor: pointer;
+    padding: 0 16px;
+    border-radius: 8px;
+    align-items: center;
+    background: #fff;
+}
+.select-menu .options .option:hover {
+    background: #f2f2f2;
+}
+.select-menu .options .option i {
+    font-size: 25px;
+    margin-right: 12px;
+}
+.select-menu .options .option .option-text {
+    font-size: 18px;
+    color: #333;
+}
+
+.select-btn i {
+    font-size: 25px;
+    transition: 0.3s;
+}
+
+.select-menu.active .select-btn i {
+    transform: rotate(-180deg);
+}
+.select-menu.active .options {
+    display: block;
+    opacity: 0;
+    z-index: 10;
+    animation-name: fadeInUp;
+    -webkit-animation-name: fadeInUp;
+    animation-duration: 0.4s;
+    animation-fill-mode: both;
+    -webkit-animation-duration: 0.4s;
+    -webkit-animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translate3d(0, 30px, 0);
+    }
+    to {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+    }
+}
+@keyframes fadeInDown {
+    from {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+    }
+    to {
+        transform: translate3d(0, 20px, 0);
+        opacity: 0;
+    }
+}
