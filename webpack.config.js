@@ -6,7 +6,7 @@ module.exports = {
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
-        publicPath: '/dist/'
+        publicPath: 'https://tiveqq.github.io/resolution-method/dist/'
     },
     resolve: {
         fallback: {
