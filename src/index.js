@@ -953,6 +953,12 @@ document.getElementById('toggleVisibilityButton').addEventListener('click', func
 
 document.getElementById("menuButton").addEventListener("click", function() {
     document.getElementById("editing-buttons").style.display = "block";
+    document.getElementById("help").style.pointerEvents = "all";
+    document.getElementById("dimacs").style.pointerEvents = "all";
+    document.getElementById("fontSizeSelector").style.pointerEvents = "all";
+    document.getElementById("pasteExampleSelector").style.pointerEvents = "all";
+    document.getElementById("strategiesResolution").style.pointerEvents = "all";
+    document.getElementById("openFile").style.pointerEvents = "all";
 });
 
 document.getElementById("menuButton").addEventListener("click", function() {
