@@ -965,11 +965,18 @@ document.getElementById("menuButton").addEventListener("click", function() {
     let popup = document.getElementById("editing-buttons");
     popup.classList.remove("hidden");
     popup.classList.add("show");
+
 });
 
 document.getElementById("closeMenuButton").addEventListener("click", function() {
     let popup = document.getElementById("editing-buttons");
     popup.classList.remove("show");
+    document.getElementById("help").style.pointerEvents = "none";
+    document.getElementById("dimacs").style.pointerEvents = "none";
+    document.getElementById("fontSizeSelector").style.pointerEvents = "none";
+    document.getElementById("pasteExampleSelector").style.pointerEvents = "none";
+    document.getElementById("strategiesResolution").style.pointerEvents = "none";
+    document.getElementById("openFile").style.pointerEvents = "none";
 });
 
 document.addEventListener("click", function(event) {
@@ -978,6 +985,12 @@ document.addEventListener("click", function(event) {
         popup.classList.add("hidden");
         popup.classList.remove("show");
     }
+    document.getElementById("help").style.pointerEvents = "none";
+    document.getElementById("dimacs").style.pointerEvents = "none";
+    document.getElementById("fontSizeSelector").style.pointerEvents = "none";
+    document.getElementById("pasteExampleSelector").style.pointerEvents = "none";
+    document.getElementById("strategiesResolution").style.pointerEvents = "none";
+    document.getElementById("openFile").style.pointerEvents = "none";
 });
 
 document.getElementById('openFile').addEventListener('click', function() {
