@@ -513,6 +513,7 @@ select {
     top: 0;
     width: 250px;
     height: 100%;
+    z-index: 10000;
     background: #f9f9f9;
     transition: right 0.5s;
     padding: 20px;
