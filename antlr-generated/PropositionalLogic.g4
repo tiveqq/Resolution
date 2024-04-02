@@ -36,6 +36,3 @@ parenthesis : LPAR equivalence RPAR | VARIABLE | CONSTANT;
 sequent     : premiseList (SEQUENT equivalence) ;
 
 premiseList : equivalence (',' equivalence)* ;
-
-// TODO: parenthesis don't work as needed
-// TODO: negation    : NEGATION negation | parenthesis ; (try maybe)

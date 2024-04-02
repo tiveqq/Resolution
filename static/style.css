@@ -27,10 +27,217 @@ body {
     margin-left: 24px;
 }
 
-@media (max-width: 1400px) {
+#closeMenuButton {
+    display: none;
+}
+
+#menuButton {
+    display: none;
+}
+
+#menuButton:hover {
+    background-color: #e1efff;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.myRedStyle {
+    color: red;
+    font-weight: bold;
+}
+
+.show {
+    pointer-events: auto;
+}
+
+#editing-buttons {
+    display: block !important;
+}
+
+#myModalDIMACS {
+    max-width: 90%;
+    margin: auto;
+}
+
+#modalText {
+    overflow: auto;
+    max-height: 70vh;
+    padding: 15px;
+}
+
+
+@media (max-width: 1050px) {
+    #myModalDIMACS {
+        max-width: 95%;
+    }
+    #modalText {
+        font-size: 14px;
+    }
+
     #first-half, #second-half {
         width: 100%;
         padding: 0;
+    }
+
+
+    .hidden {
+        pointer-events: none;
+    }
+    #editing-buttons.show {
+        display: none;
+    }
+
+    #closeMenuButton {
+        display: block;
+        margin: auto;
+    }
+
+    #generalTable {
+        display: flex;
+        flex-direction: column;
+    }
+    #generalTable tr {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+    #generalTable th {
+        display: none;
+    }
+
+    #generalTable td {
+        display: block;
+    }
+
+    #pasteExampleSelectorStatic {
+        width: 149px !important;
+        margin: auto !important;
+
+    }
+
+    #helpStatic {
+        margin: auto !important;
+    }
+
+    #fontSizeSelectorStatic {
+        margin: auto !important;
+    }
+
+    #openFileStatic {
+        width: 149px !important;
+        margin: auto !important;
+
+    }
+
+    #strategiesResolutionStatic {
+        width: 185px !important;
+        margin: auto !important;
+    }
+
+    #dimacsStatic {
+        margin: auto !important;
+    }
+
+    #resolveButtonStatic {
+        margin: auto !important;
+
+    }
+
+    #keyboard-icon {
+        display: none !important;
+    }
+
+    .popup.show {
+        display: block;
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+
+    .popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border: 1px solid #ddd;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        border-radius: 10px;
+        opacity: 0;
+    }
+
+    #menuButton {
+        display: flex;
+        width: 140px;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 10px;
+        border: 2px solid #094e86;
+        background-color: white;
+        color: #094e86;
+        font-weight: bold;
+        font-size: 17px;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+        margin: 15px auto;
+
+    }
+
+    #menuButton svg {
+        width: 25px;
+        height: 12px;
+    }
+
+    #openFile {
+        margin: 0 0 10px 0 !important;
+    }
+
+    #dimacs {
+        margin: 0 0 10px 0 !important;
+    }
+
+    #strategiesResolution {
+        margin: 0 0 10px 0 !important;
+    }
+
+    #pasteExampleSelector {
+        margin: 0 0 10px 0 !important;
+    }
+
+    #fontSizeSelector {
+        margin: 0 0 10px 0 !important;
+
+    }
+
+    #help {
+        margin: 0 10px 0 0 !important;
+
+    }
+
+    #editing-buttons {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border: 1px solid #ddd;
+        padding: 10px;
+        box-shadow: 0 0 10px #000;
+        z-index: 10;
+    }
+
+    #editing-buttons {
+        display: none;
+    }
+    #menuButton {
+        display: block;
     }
 
     #input-field {
@@ -138,10 +345,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    /*width:100%;*/
 }
 
-#tree-container {
-    max-width: 50%;
+
+
+.Tree svg {
+    width: 350px;
+    height: 400px;
 }
 
 .Tree-item--top {
@@ -158,8 +369,9 @@ body {
     justify-content: center;
 }
 
-#dynamic-tree-container {
-    max-width: 50%;
+.Dynamic-Tree svg {
+    width: 350px;
+    height: 400px;
 }
 
 .Dynamic-Tree-item--top {
@@ -353,7 +565,7 @@ select {
 
 .input-group {
     display: flex;
-    width: 223px
+    width: 223px;
 }
 
 #keyboard-container {
@@ -519,6 +731,7 @@ select {
 }
 
 
+
 #resolution-result {
     font-size: 18px;
     line-height: 1.6;
@@ -546,7 +759,7 @@ select {
 
 .tablink {
     font-weight: bold;
-    font-size: 20px;
+    font-size: 16px;
     color: grey;
     padding: 3px;
     cursor: pointer;
@@ -566,7 +779,6 @@ select {
     font-size: 16px;
     border-radius: 6px;
     transition: background-color 0.1s ease;
-    margin-top: 5px;
     position: relative;
 }
 
@@ -618,7 +830,8 @@ select {
 }
 
 #download-latex-button {
-    width: 13px;
+    /*width: 13px;*/
+    width: 162px;
 }
 
 :focus {
@@ -674,6 +887,7 @@ select {
 }
 
 #download-btn svg, #latex-tree-generate svg {
+    width: 50px;
     height: 40px;
     margin-top: 3px;
     margin-bottom: -25px;
@@ -710,6 +924,7 @@ select {
 #download-svg-button {
     display: flex;
     justify-content: flex-end;
+    margin-inline-start: -67px;
 }
 
 
@@ -821,6 +1036,10 @@ select {
     white-space: nowrap;
 }
 
+.clauseActual {
+    white-space: nowrap;
+}
+
 .line {
     border-top: 2px solid black;
     width: 100%;
@@ -877,8 +1096,13 @@ select {
     background-color: #e1efff;
 }
 
-#help svg, #helpStatic svg {
-    width: 20px;
+#closeMenuButton:hover {
+    background-color: #ffe1e1;
+
+}
+
+#help svg, #helpStatic svg, #closeMenuButton svg {
+    width: 25px;
     height: 15px;
     margin-left: 6px;
 }
@@ -908,8 +1132,9 @@ select {
 }
 
 #download-buttons {
-    display: flex;
-    justify-content: end;
+    display: inline-flex;
+    /*gap: 45px;*/
+    width:50%
 }
 
 .close {
@@ -994,7 +1219,7 @@ select {
     background-color: #073c68;
 }
 
-#openFile, #help, #dimacs, #helpStatic, #openFileStatic, #dimacsStatic  {
+#openFile, #help, #dimacs, #helpStatic, #openFileStatic, #dimacsStatic {
     width: 190px;
     display: inline-flex;
     align-items: center;
@@ -1010,6 +1235,21 @@ select {
     cursor: pointer;
     outline: none;
     margin: 10px 0 10px 24px;
+}
+
+#closeMenuButton {
+    width: 140px;
+    gap: 5px;
+    padding: 10px;
+    border: 2px solid #880404;
+    background-color: #ffeded;
+    margin-top: 10px;
+    color: #a40505;
+    font-weight: bold;
+    font-size: 17px;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
 }
 
 #help, #helpStatic {
@@ -1148,6 +1388,8 @@ select#fontSizeSelector:focus, select#strategiesResolution:focus, select#fontSiz
     z-index: 1;
     color: #094e86;
 }
+
+
 
 .modal-header button {
     padding: 10px;

@@ -76,34 +76,23 @@ export default class PropositionalLogicVisitor extends antlr4.tree.ParseTreeVisi
 	}
 
 	visitSequent(ctx) {
-		// Посетить список предпосылок
 		const premises = this.visit(ctx.premiseList());
 
-		// Посетить выражение после знака ⊢
 		const conclusion = this.visit(ctx.equivalence());
 
-		// Здесь можно определить логику для обработки секвенции
-		// В зависимости от вашей логики обработки
-		// Например, можно вернуть объект с предпосылками и заключением
 		return { premises, conclusion };
 	}
 
 	visitPremiseList(ctx) {
-		// Обход всех предпосылок
-		// Здесь можно вернуть массив предпосылок
 		return ctx.equivalence().map(equivalence => this.visit(equivalence));
 	}
 
 	visitLogic(ctx) {
-		// Этот метод должен соответствовать структуре правила `logic` в вашей грамматике.
-		// Обычно, он будет проверять, какая часть правила `logic` присутствует, и вызывать соответствующий метод.
 		if (ctx.sequent()) {
 			return this.visitSequent(ctx.sequent());
 		} else if (ctx.equivalence()) {
 			return this.visitEquivalence(ctx.equivalence());
 		}
-
-		// В зависимости от вашей грамматики, здесь могут быть добавлены дополнительные условия.
 	}
 
 }

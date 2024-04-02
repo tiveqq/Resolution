@@ -16,6 +16,8 @@
             tex: {packages: {'[+]': ['color']}},
         };
     </script>
+
+
 </head>
 
 <body id="body">
@@ -29,7 +31,7 @@
                     <span class="tablink" onclick="openTab(event, 'SpecialSymbols')">Špeciálne symboly</span>
                 </div>
                 <div id="Všeobecné" class="tabcontent">
-                    <table>
+                    <table id="generalTable">
                         <tr>
                             <th>Tlačidlo</th>
                             <th>Popis</th>
@@ -266,7 +268,14 @@
 
 
     <div id="first-half">
-    <div id="editing-buttons">
+        <button id="menuButton">
+            Menu
+            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill="#094e86" fill-rule="evenodd" d="M19 4a1 1 0 01-1 1H2a1 1 0 010-2h16a1 1 0 011 1zm0 6a1 1 0 01-1 1H2a1 1 0 110-2h16a1 1 0 011 1zm-1 7a1 1 0 100-2H2a1 1 0 100 2h16z"></path> </g></svg>
+        </button>
+
+
+        <div id="editing-buttons" class="popup">
+
         <button id="help">
             Help
 
@@ -316,8 +325,14 @@
                  fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:#094e86;} </style> <g> <polygon class="st0" points="47.916,340.624 166.242,340.624 166.242,512 345.774,512 345.774,340.624 464.1,340.624 256.015,88.146 "></polygon> <rect x="23.574" class="st0" width="464.851" height="72.132"></rect> </g> </g></svg>
         </button>
 
+            <button id="closeMenuButton" onclick="closePopup()">
+                Zatvoriť
 
-        <div id="errorModal" class="modal" style="display:none;">
+                <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#880404" d="M195.2 195.2a64 64 0 0 1 90.496 0L512 421.504 738.304 195.2a64 64 0 0 1 90.496 90.496L602.496 512 828.8 738.304a64 64 0 0 1-90.496 90.496L512 602.496 285.696 828.8a64 64 0 0 1-90.496-90.496L421.504 512 195.2 285.696a64 64 0 0 1 0-90.496z"></path></g></svg>
+            </button>
+
+
+            <div id="errorModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <span class="close" id="closeErrorModal">&times;</span>
                 <p id="errorMessage"></p>
@@ -368,8 +383,6 @@
 
         </div>
 
-
-
     </div>
 
 
@@ -385,8 +398,7 @@
     </div>
 
 
-
-    <div id="error-message"></div>
+        <div id="error-message"></div>
 
 
     <div id="result-interpretation" style="visibility: hidden">
@@ -417,14 +429,12 @@
         <div id="resolution-container" style="display: none;"></div>
 
         <div id='download-buttons'>
-            <div id="download-svg-button"></div>
             <div id="download-latex-button"></div>
+            <div id="download-svg-button"></div>
         </div>
 
         <div class="Tree">
-            <div class="Tree-item Tree-item--top">&nbsp;</div>
             <div id="tree-container" style="display: none;"></div>
-            <div class="Tree-item Tree-item--bottom">&nbsp;</div>
         </div>
     </div>
 </div>

@@ -12,5 +12,7 @@
     <orderEntry type="library" name="split.js" level="application" />
     <orderEntry type="library" name="mathjax" level="application" />
     <orderEntry type="library" name="d3" level="application" />
+    <orderEntry type="library" name="d3" level="application" />
+    <orderEntry type="library" name="mathjax" level="application" />
   </component>
 </module>

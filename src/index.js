@@ -3,457 +3,65 @@ import PropositionalLogicLexer from "../antlr-generated/PropositionalLogicLexer"
 import PropositionalLogicParser from "../antlr-generated/PropositionalLogicParser";
 import PropositionalLogicVisitor from "../antlr-generated/PropositionalLogicVisitor";
 import Formula from "./cnf-converter"
-import * as monaco from 'monaco-editor';
+import { initializeMonacoEditor, getModel, getEditor, displayError, monaco } from './monaco-editor';
+import {buildTreeDataCommon, buildTreeDataLinear, buildTikzPicture,
+    drawTree, downloadSVG, clearTree} from "./proof-tree"
+import {
+    createResolutionStep, divsOfExplanation, clearTableResolutionInterpretation,
+    updateCurrentClausesDisplay, updateClauseSelections, convertFormulasToLatex,
+    convertActualClausesToLatex, convertClausesToLatex, updateResolutionTable, initControlButtons
+} from './ui'
 
-const resolveButton = document.getElementById('resolveButton'); // button, which executes FORMULA scenario
-
+export let steps = []; // current special structure of clausesForEach
 let formula = null; // current value// of user's FORMULA input
 let logicalConsequence = []; // // current value of user's LOGICAL CONSEQUENCE input
 let clausesForEach = []; // current clauses in a moment of submitting the input formulas/conditions/conclusions
 let stepNumber = 0; // current step number in interactive proving formulas mode
 let undoStack = [];
 let redoStack = [];
-let steps = []; // current special structure of clausesForEach
 let resolutionFound = false; // is resolution was found by the method
 let usedPairs = new Set(); // used pairs of clauses by user's
+let isNegationChecked = false; // is radio button which represents if formula was negated checked
+let isDIMACS = false; // check if user wants to get dimacs formula type
+let lastIsChecked; // was
+let isWithoutStrategy = true; // proof without strategy
+let isLinearResolution = false; // linear proof
+let isUnitResolution = false; // unit strategy proof
+let wasStrategyChanged = false; // check if strategy was changed and user can query another feedback
+let initialClauses = []; // initial clauses of formula
+let isAnySteps = false; // if was produced any steps of proof strategy
+let isProvingStarted = false; // was started at least one proof process
+let lastInputTry = null; // which one proof was started
+
+const resolveButton = document.getElementById('resolveButton'); // button, which executes FORMULA scenario
+const buttonDynamicSVG = document.getElementById('download-btn-dynamic'); // download SVG dynamic tree button
+buttonDynamicSVG.setAttribute('title', 'Stiahnuť strom vo formáte SVG');
+const strategiesSelect = document.getElementById('strategiesResolution');
 const applyResolutionButton = document.getElementById('applyResolutionButton');
 applyResolutionButton.addEventListener('click', applyResolution); // applies resolution rule on two clauses
-const buttonDynamicSVG = document.getElementById('download-btn-dynamic'); // download SVG dynamic tree button
-const strategiesSelect = document.getElementById('strategiesResolution');
-let isChecked = false;
-let isDIMACS = false;
-let lastIsChecked;
-let isWithoutStrategy = true;
-let isLinearResolution = false;
-let isUnitResolution = false;
-let wasStrategyChanged = false;
-let initialClauses = [];
-let isAnySteps = false;
 
-document.styleSheets[0].insertRule('.myRedStyle { color: red; font-weight: bold; }', 0);
+let buttonSVG = document.createElement('button');
+buttonSVG.id = 'download-btn';
+buttonSVG.innerHTML = '<svg fill="#094e86" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 585.918 585.918" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M357.396,535.335c0.776,0.042,1.542,0.115,2.329,0.115h177.39c20.75,0,37.627-16.883,37.627-37.628V86.604 c0-20.743-16.877-37.628-37.627-37.628h-177.39c-0.781,0-1.553,0.069-2.329,0.113V0L11.176,46.207v492.31l346.22,47.401V535.335z M357.396,272.575v-17.651h2.592v-8.097l11.014-9.9L357.396,272.575z M379.82,235.869h4.758v-2.688h12.104v2.231l-39.286,103.259 v-44.096L379.82,235.869z M553.24,352.624h-1.122l0.167-53.325h0.955V352.624z M359.726,70.479h177.39 c8.893,0,16.125,7.233,16.125,16.125v199.9h-11.411v2.688H487.78v-2.688h-12.976v12.794h2.151v12.296h-2.151v12.977h12.976v-2.337 h19.087c-5.532,5.423-11.946,8.783-19.443,10.19v-1.838h-12.798v2.015c-8.347-1.117-15.465-4.607-21.681-10.624 c-6.168-5.973-9.848-12.894-11.17-21.071h1.563v-12.974h-1.795c1.233-8.325,4.903-15.425,11.159-21.63 c6.269-6.213,13.46-9.813,21.923-10.947v2.015h12.798v-1.716c5.848,1.039,11.224,3.404,16.047,7.063v6.656h12.977v-2.312 l18.022,0.129v2.179h12.977v-12.801h-5.664c-5.99-9.838-13.917-17.893-23.598-23.969c-9.37-5.89-19.7-9.372-30.771-10.393v-3.087 h-12.798v3.027c-17.492,1.251-32.715,8.223-45.292,20.743c-12.577,12.515-19.633,27.656-20.999,45.035h-3.043v12.974h3.076 c1.596,17.271,8.755,32.263,21.35,44.61c12.566,12.336,27.658,19.202,44.908,20.451v2.688h12.798v-2.761 c10.772-1.104,20.841-4.536,30.026-10.206v9.744h12.8v-2.509h11.579v2.509h11.412v132.4c0,8.893-7.233,16.127-16.127,16.127 H359.716c-0.793,0-1.564-0.127-2.33-0.243V365.237h2.272v-9.622l-0.1-0.566l45.518-119.18h4.394v-12.795h-12.798v2.144h-12.109 v-0.478l20.697-18.599h8.378v-12.294h-12.294v9.428l-22.037,19.798h-7.539v6.779l-14.226,12.777h-0.151V70.709 C358.162,70.602,358.929,70.479,359.726,70.479z M517.449,340.078v6.225c-9.076,6.451-19.154,10.352-30.025,11.575v-2.036h-12.798 v2.137c-15.16-1.223-28.399-7.328-39.393-18.163c-10.981-10.813-17.329-23.896-18.871-38.909h1.706v-12.979h-1.759 c1.349-15.142,7.612-28.381,18.662-39.374c11.055-11.002,24.372-17.238,39.654-18.572v2.128h12.798v-1.892 c9.281,0.989,18.031,3.989,26.068,8.945c8.315,5.118,15.191,11.875,20.483,20.103h-17.523v-2.688h-8.157 c-6.1-4.746-13.106-7.746-20.871-8.942v-3.242h-12.798v2.94c-10.61,1.205-19.827,5.664-27.465,13.31 c-7.643,7.638-12.158,16.809-13.46,27.289h-3.16v12.974h3.197c1.412,10.383,6.021,19.381,13.727,26.803 c7.685,7.392,16.81,11.718,27.161,12.898v2.777h12.798v-3.044c11.349-1.628,20.897-6.926,28.431-15.77h6.509v-12.977h-12.798v2.86 H487.78v-2.86h-2.865v-12.296h2.865v-2.146h54.049v2.146h2.478c-0.021,4.379-0.078,13.239-0.153,26.574v26.751h-2.324v2.335h-11.58 v-14.881H517.449L517.449,340.078z M65.297,349.175c-11.53-0.311-22.783-3.838-28.368-7.354l4.549-20.206 c6.057,3.482,15.423,7.04,25.168,7.198c10.615,0.189,16.239-4.484,16.239-11.717c0-6.908-4.872-10.876-17.137-15.69 c-16.735-6.389-27.496-16.38-27.496-32.15c0-18.509,14.175-33.048,38.079-33.682c11.633-0.308,20.271,2.118,26.481,4.945 l-5.281,20.486c-4.176-2.092-11.577-5.103-21.646-4.935c-9.981,0.165-14.792,5.133-14.792,10.827 c0,6.998,5.72,10.045,18.911,15.368c18.307,7.202,27.032,17.499,27.032,33.285C107.03,334.324,93.505,349.926,65.297,349.175z M178.115,350.461l-29.302-0.756l-34.547-113.296l26.626-0.682l13.312,48.063c3.759,13.583,7.195,26.711,9.827,41.063l0.506,0.011 c2.801-13.797,6.268-27.454,10.101-40.646l14.394-49.723l27.614-0.703L178.115,350.461z M330.235,348.729 c-8.902,2.709-25.575,6.289-42.026,5.858c-22.363-0.6-38.289-6.51-49.25-17.354c-10.859-10.383-16.764-25.879-16.598-43.203 c0.178-39.203,28.795-62.355,68.778-63.392c16.115-0.425,28.683,2.354,34.908,5.124l-6.048,22.405 c-6.949-2.811-15.537-5.042-29.23-4.812c-23.142,0.376-40.326,13.418-40.326,39.278c0,24.631,15.567,39.424,38.299,39.812 c6.454,0.104,11.624-0.531,13.862-1.575v-25.544l-19.174-0.109v-21.384l46.806-0.164V348.729z"></path> </g> </g></svg>';
+buttonSVG.style.display = 'none';
+buttonSVG.setAttribute('title', 'Stiahnuť strom vo formáte SVG');
 
+let buttonLaTeX = document.createElement('button');
+buttonLaTeX.id = 'latex-tree-generate';
+buttonLaTeX.innerHTML = '<svg fill="#094e86" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 585.918 585.918" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M357.396,535.335c0.776,0.053,1.542,0.115,2.329,0.115h177.39c20.756,0,37.627-16.888,37.627-37.628V86.602 c0-20.743-16.871-37.628-37.627-37.628h-177.39c-0.781,0-1.553,0.076-2.329,0.123V0L11.176,46.206v492.311l346.22,47.401V535.335z M357.396,70.717c0.766-0.113,1.532-0.241,2.329-0.241h177.39c8.893,0,16.125,7.236,16.125,16.126v411.22 c0,8.888-7.232,16.127-16.125,16.127h-177.39c-0.792,0-1.563-0.116-2.329-0.232V70.717z M118.282,258.927l-28.609,0.553v90.938 l-22.922-1.039v-89.453l-26.17,0.52v-20.57l77.701-2.71V258.927z M204.218,355.584l-72.954-3.297V236.714l70.46-2.457v22.48 l-45.32,0.908v24.429l42.659-0.143v22.267l-42.659-0.49v27.906l47.814,1.459V355.584z M290.702,359.501l-12.045-23.612 c-4.887-8.998-8.005-15.653-11.693-23.055h-0.375c-2.698,7.259-5.971,13.727-9.986,22.383l-10.612,22.258l-32.068-1.449 l36.035-61.66l-34.767-60.58l32.305-1.129l11.21,22.562c3.842,7.596,6.725,13.738,9.814,20.835l0.388-0.005 c3.1-8.113,5.638-13.8,8.96-21.217l11.25-23.625l35.35-1.231l-38.521,63.793l40.594,67.333L290.702,359.501z"></path> <path d="M498.006,358.997c0,1.88-0.135,3.506-0.409,4.913c-0.273,1.407-0.912,2.571-1.933,3.517 c-1.008,0.924-2.55,1.648-4.607,2.147c-2.08,0.52-4.888,0.771-8.479,0.771h-81.276v-14.972c0-6.004,1.387-10.541,4.158-13.626 c2.771-3.077,7.5-5.046,14.205-5.9v-1.755h-25.019v87.934h25.019v-2.929c-3.739-0.231-6.794-0.873-9.177-1.917 c-2.372-1.06-4.252-2.478-5.617-4.272c-1.364-1.796-2.299-3.921-2.803-6.378c-0.499-2.456-0.767-5.276-0.767-8.483v-12.746h81.271 c3.506,0,6.278,0.258,8.305,0.771c2.025,0.504,3.56,1.218,4.609,2.163c1.055,0.935,1.737,2.101,2.057,3.501 c0.305,1.397,0.462,3.041,0.462,4.913v3.732h2.919v-45.019h-2.919V358.997z"></path> <path d="M518.668,267.328c0.819,1.166,1.47,2.51,1.932,4.032c0.462,1.521,0.782,3.328,0.935,5.438 c0.158,2.104,0.231,4.672,0.231,7.72v18.006c0,2.258-0.116,3.979-0.346,5.145c-0.243,1.18-0.758,2.026-1.576,2.577 s-2.005,0.861-3.57,0.939c-1.563,0.084-3.662,0.104-6.319,0.104h-35.076v-23.26c0-3.436,0.263-6.16,0.771-8.187 c0.504-2.026,1.365-3.601,2.576-4.737c1.208-1.125,2.82-1.94,4.846-2.444c2.026-0.517,4.573-0.969,7.602-1.357v-2.929h-36.956 v2.919c2.656,0.157,4.956,0.475,6.894,0.937c1.953,0.473,3.548,1.31,4.802,2.52c1.255,1.21,2.185,2.866,2.81,4.965 c0.619,2.103,0.94,4.872,0.94,8.308v23.265H427.17v-29.115c0-3.58,0.18-6.52,0.53-8.83c0.353-2.302,1.155-4.189,2.399-5.672 c1.249-1.483,3.03-2.667,5.313-3.57c2.298-0.892,5.364-1.729,9.186-2.509v-1.872h-23.265v81.853h2.918v-3.732 c0-4.451,1.051-7.601,3.16-9.486c1.555-1.323,5.723-1.984,12.504-1.984h68.998c5.136,0,8.568,0.32,10.278,0.936 c0.945,0.319,1.755,0.859,2.457,1.642c0.703,0.776,1.271,1.659,1.7,2.625c0.432,0.987,0.756,2.016,0.998,3.104 c0.23,1.091,0.347,2.135,0.347,3.165v3.732h2.919v-81.847l-26.657-9.239v3.161c6.709,3.503,11.58,6.813,14.615,9.932 C516.82,264.914,517.859,266.15,518.668,267.328z"></path> <path d="M393.218,250.476c0.587-2.182,1.595-4.35,3.044-6.488c1.438-2.139,3.465-4.371,6.069-6.664 c2.609-2.302,6.026-4.893,10.231-7.78l30.636-20.923l31.69,25.016c2.719,2.18,5.154,4.283,7.297,6.32 c2.15,2.029,3.947,4.076,5.386,6.134c1.437,2.082,2.582,4.231,3.443,6.488c0.86,2.268,1.364,4.682,1.522,7.257h2.919v-37.649 h-2.919c-0.158,3.977-0.776,6.665-1.88,8.063c-1.081,1.407-2.446,2.113-4.083,2.113c-0.553,0-1.051-0.023-1.523-0.065 c-0.463-0.032-1.008-0.21-1.637-0.527c-0.62-0.315-1.397-0.796-2.348-1.458c-0.924-0.661-2.168-1.617-3.731-2.863l-28.532-22.331 l27.239-18.005c1.713-1.092,3.077-1.995,4.101-2.701c1.013-0.692,1.849-1.22,2.509-1.574c0.662-0.344,1.171-0.564,1.513-0.638 c0.352-0.086,0.735-0.113,1.112-0.113c2.268,0,4.022,0.683,5.267,2.047c1.238,1.365,1.903,4.186,1.983,8.473h2.919v-45.607h-2.919 c-0.085,2.415-0.368,4.497-0.883,6.247c-0.503,1.753-1.501,3.549-2.981,5.386c-1.479,1.83-3.633,3.822-6.487,5.961 c-2.846,2.141-6.679,4.85-11.517,8.118l-34.027,22.813l-27.014-21.05c-5.606-4.441-9.344-7.758-11.224-9.945 c-1.795-2.026-3.233-4.145-4.326-6.375c-1.091-2.215-1.753-5.124-1.984-8.714h-2.919v37.662h2.919 c0.158-4.209,0.631-7.16,1.397-8.832c0.787-1.682,2.309-2.522,4.567-2.522c0.629,0,1.175,0.042,1.637,0.124 c0.468,0.076,0.992,0.275,1.581,0.574c0.582,0.318,1.327,0.785,2.221,1.41c0.891,0.622,2.094,1.52,3.558,2.688l23.98,18.824 l-24.442,16.368c-3.664,2.501-6.477,3.735-8.414,3.735c-1.476,0-2.818-0.767-4.031-2.331c-1.213-1.553-1.896-4.399-2.048-8.538 h-2.919v49.116h2.919C392.263,255.077,392.629,252.665,393.218,250.476z"></path> </g> </g></svg>';
+buttonLaTeX.style.display = 'none';
+buttonLaTeX.setAttribute('title', 'LaTeX');
 
-// CSS styles for proof trees
-const cssStyles = `
-            .link {
-                fill: none;
-                stroke: #000;
-                stroke-width: 1px;
-            }
-            
-            .node circle {
-                fill: #fff; 
-                stroke: #000; 
-                stroke-width: 1px; 
-            }
-            
-            .node text {
-                font: 12px sans-serif;
-            }
-            
-            .node--internal circle {
-                fill: #ffffff;
-            }
-            
-            .node--leaf circle {
-                fill: #fff;
-            }
-            `;
+const modal = document.getElementById("myModal");
+const btn = document.getElementById("help");
+const span = document.getElementsByClassName("close")[0];
 
-// Creating Monaco editor
-const editorOptions = {
-    value: '',
-    language: 'propositional-logic-language',
-    fontSize: 18,
-    renderLineHighlight: 'line'
-};
-monaco.languages.register({ id: 'propositional-logic-language' });
-let editor = monaco.editor.create(document.getElementById('monaco-editor'), editorOptions);
+initializeMonacoEditor();
 
-const model = editor.getModel();
+const editor = getEditor();
+const model = getModel();
 
-const resizer = document.getElementById('divider');
-let isResizing = false;
-
-resizer.addEventListener('mousedown', function(e) {
-    isResizing = true;
-    let startX = e.clientX;
-    let startWidthFirstHalf = document.getElementById('first-half').offsetWidth;
-
-    function handleMouseMove(e) {
-        if (!isResizing) {
-            return;
-        }
-
-        const container = document.getElementById('main');
-        const firstHalf = document.getElementById('first-half');
-        const secondHalf = document.getElementById('second-half');
-
-        const deltaX = e.clientX - startX;
-        let newWidthFirstHalf = startWidthFirstHalf + deltaX;
-        let newWidthFirstHalfPercent = (newWidthFirstHalf / container.offsetWidth) * 100;
-        let newWidthSecondHalfPercent = 100 - newWidthFirstHalfPercent;
-
-        if (newWidthFirstHalfPercent < 33) {
-            newWidthFirstHalfPercent = 33;
-            newWidthSecondHalfPercent = 100 - newWidthFirstHalfPercent;
-        } else if (newWidthSecondHalfPercent < 29) {
-            newWidthSecondHalfPercent = 29;
-            newWidthFirstHalfPercent = 100 - newWidthSecondHalfPercent;
-        }
-
-        if (newWidthFirstHalfPercent >= 33 && newWidthSecondHalfPercent >= 29) {
-            firstHalf.style.width = `${newWidthFirstHalfPercent}%`;
-            secondHalf.style.width = `${newWidthSecondHalfPercent}%`;
-            resizer.style.left = `${(newWidthFirstHalfPercent / 100) * container.offsetWidth}px`;
-        }
-
-        editor.layout(); 
-    }
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', () => {
-        isResizing = false;
-        document.removeEventListener('mousemove', handleMouseMove);
-    });
-});
-
-
-
-
-const verticalResizer = document.getElementById('vertical-resizer');
-let isVerticalResizing = false;
-
-verticalResizer.addEventListener('mousedown', function(e) {
-    isVerticalResizing = true;
-    let startY = e.clientY;
-    let startHeight = document.getElementById('monaco-editor').offsetHeight;
-
-    function handleVerticalMouseMove(e) {
-        if (!isVerticalResizing) {
-            return;
-        }
-
-        const deltaY = e.clientY - startY;
-        let newHeight = startHeight + deltaY;
-
-        if (newHeight >= 0 && newHeight <= window.innerHeight) {
-            document.getElementById('monaco-editor').style.height = `${newHeight}px`;
-        }
-
-
-        editor.layout();
-    }
-
-    document.addEventListener('mousemove', handleVerticalMouseMove);
-    document.addEventListener('mouseup', () => {
-        isVerticalResizing = false;
-        document.removeEventListener('mousemove', handleVerticalMouseMove);
-    });
-});
-
-window.addEventListener('resize', function() {
-    if (window.innerWidth <= 1400) {
-        document.getElementById('first-half').style.width = '';
-        document.getElementById('second-half').style.width = '';
-    }
-    if (window.innerWidth > 1400) {
-        const firstHalf = document.getElementById('first-half');
-        const divider = document.getElementById('divider');
-
-        divider.style.left = `${firstHalf.offsetWidth}px`;
-
-        editor.layout();
-    }
-    editor.layout();
-});
-
-
-monaco.languages.registerCompletionItemProvider('propositional-logic-language', {
-    triggerCharacters: ['\\'],
-    provideCompletionItems: function(model, position) {
-        const suggestions = [
-            {
-                label: '\\wedge',
-                kind: monaco.languages.CompletionItemKind.Operator,
-                insertText: '∧',
-                range: getRange(position),
-                detail: '∧',
-            },
-            {
-                label: '\\vee',
-                kind: monaco.languages.CompletionItemKind.Operator,
-                insertText: '∨',
-                range: getRange(position),
-                detail: '∨',
-            },
-            {
-                label: '\\neg',
-                kind: monaco.languages.CompletionItemKind.Operator,
-                insertText: '¬',
-                range: getRange(position),
-                detail: '¬',
-            },
-            {
-                label: '\\Rightarrow',
-                kind: monaco.languages.CompletionItemKind.Operator,
-                insertText: '⇒',
-                range: getRange(position),
-                detail: '⇒',
-            },
-            {
-                label: '\\Leftrightarrow',
-                kind: monaco.languages.CompletionItemKind.Operator,
-                insertText: '⇔',
-                range: getRange(position),
-                detail: '⇔',
-            },
-            {
-                label: '\\alpha',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'α',
-                range: getRange(position),
-                detail: 'α',
-            },
-            {
-                label: '\\beta',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'β',
-                range: getRange(position),
-                detail: 'β',
-            },
-            {
-                label: '\\gamma',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'γ',
-                range: getRange(position),
-                detail: 'γ',
-            },
-            {
-                label: '\\delta',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'δ',
-                range: getRange(position),
-                detail: 'δ',
-            },
-            {
-                label: '\\epsilon',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ε',
-                range: getRange(position),
-                detail: 'ε',
-            },
-            {
-                label: '\\zeta',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ζ',
-                range: getRange(position),
-                detail: 'ζ',
-            },
-            {
-                label: '\\eta',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'η',
-                range: getRange(position),
-                detail: 'η',
-            },
-            {
-                label: '\\theta',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'θ',
-                range: getRange(position),
-                detail: 'θ',
-            },
-            {
-                label: '\\iota',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ι',
-                range: getRange(position),
-                detail: 'ι',
-            },
-            {
-                label: '\\kappa',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'κ',
-                range: getRange(position),
-                detail: 'κ',
-            },
-            {
-                label: '\\lambda',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'λ',
-                range: getRange(position),
-                detail: 'λ',
-            },
-            {
-                label: '\\mu',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'μ',
-                range: getRange(position),
-                detail: 'μ',
-            },
-            {
-                label: '\\xi',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ξ',
-                range: getRange(position),
-                detail: 'ξ',
-            },
-            {
-                label: '\\omicron',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ο',
-                range: getRange(position),
-                detail: 'ο',
-            },
-            {
-                label: '\\pi',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'π',
-                range: getRange(position),
-                detail: 'π',
-            },
-            {
-                label: '\\rho',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ρ',
-                range: getRange(position),
-                detail: 'ρ',
-            },
-            {
-                label: '\\sigma',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'σ',
-                range: getRange(position),
-                detail: 'σ',
-            },
-            {
-                label: '\\tau',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'τ',
-                range: getRange(position),
-                detail: 'τ',
-            },
-            {
-                label: '\\upsilon',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'υ',
-                range: getRange(position),
-                detail: 'υ',
-            },
-            {
-                label: '\\phi',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'φ',
-                range: getRange(position),
-                detail: 'φ',
-            },
-            {
-                label: '\\chi',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'χ',
-                range: getRange(position),
-                detail: 'χ',
-            },
-            {
-                label: '\\psi',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ψ',
-                range: getRange(position),
-                detail: 'ψ',
-            },
-            {
-                label: '\\omega',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: 'ω',
-                range: getRange(position),
-                detail: 'ω',
-            },
-            {
-                label: '\\bot',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: '⊥',
-                range: getRange(position),
-                detail: '⊥',
-            },
-            {
-                label: '\\top',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: '⊤',
-                range: getRange(position),
-                detail: '⊤',
-            },
-            {
-                label: '\\line',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: '---------------\n',
-                range: getRange(position),
-                detail: '\\\\\\',
-            },
-            {
-                label: '\\vdash',
-                kind: monaco.languages.CompletionItemKind.Variable,
-                insertText: '⊢',
-                range: getRange(position),
-                detail: '⊢',
-            }
-
-
-        ];
-
-        return { suggestions: suggestions };
-    }
-});
-
-
-monaco.editor.defineTheme('myCustomTheme', {
-    base: 'vs', 
-    inherit: true,
-    rules: [], 
-    colors: {
-        'editor.lineHighlightBackground': '#eef3fc', 
-        'editor.lineHighlightBorder': '#a5d0ff'
-    }
-});
-
-monaco.editor.setTheme('myCustomTheme');
-
-const fontSizeSelector = document.getElementById('fontSizeSelector');
-
-fontSizeSelector.addEventListener('change', function () {
-    editor.updateOptions({ fontSize: parseInt(this.value) });
-});
-
-const pasteExampleSelector = document.getElementById('pasteExampleSelector');
-
-const examples = {
-    example1: "p ∨ ¬p",
-    example2: "(a⇒b)∧a⇒b",
-    example3: "(a⇔b)⇔(a⇔b)",
-    example4: "a, b ⊢ b",
-    example5: "¬p⇒q\n¬q⇒r\n¬(p∧r)\n---------------\nq",
-    example6: "φ⇒ψ\n" +
-        "φ\n" +
-        "---------------\n" +
-        "ψ"
-};
-
-pasteExampleSelector.addEventListener('change', function () {
-    const key = this.value;
-    const codeToInsert = examples[key];
-
-    if (codeToInsert) {
-        editor.setValue(codeToInsert);
-    }
-});
-function getRange(position) {
-    return {
-        startLineNumber: position.lineNumber,
-        endLineNumber: position.lineNumber,
-        startColumn: position.column - 1,
-        endColumn: position.column
-    };
-}
+initControlButtons(editor);
 
 function checkSyntax(input, isFormula) {
     monaco.editor.setModelMarkers(editor.getModel(), 'propositional-logic-language', []);
@@ -461,31 +69,7 @@ function checkSyntax(input, isFormula) {
     const errorMessage = document.getElementById('error-message');
     errorMessage.innerHTML = '';
 
-    const resolveButton = document.getElementById('resolveButton');
-
-
-    if (input.includes('⊢')) {
-        const relevantLine = input.split('\n').find(line => line.includes('⊢'));
-
-        if (relevantLine) {
-            const [premises, conclusion] = relevantLine.split('⊢');
-            const premisesLines = premises.split(',').map(s => s.trim()).filter(s => s !== '');
-            const formattedInput = [...premisesLines, '---------------', conclusion.trim()].join('\n');
-            const lines = formattedInput.split('\n');
-            const results = [];
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].trim() === '' || lines[i] === '---------------' || lines[i] === '///') continue;
-                const result = parseAndVisit(lines[i].trim(), i);
-                if (result !== null) {
-                    results.push(result);
-                }
-            }
-            return results;
-        }
-    } else if (isFormula) {
-        return parseAndVisit(input, 0);
-    } else {
-        const lines = input.split('\n');
+    function createStructuredFormula(lines) {
         const results = [];
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].trim() === '' || lines[i] === '---------------' || lines[i] === '///') continue;
@@ -496,10 +80,26 @@ function checkSyntax(input, isFormula) {
         }
         return results;
     }
+
+    if (input.includes('⊢')) {
+        const relevantLine = input.split('\n').find(line => line.includes('⊢'));
+
+        if (relevantLine) {
+            const [premises, conclusion] = relevantLine.split('⊢');
+            const premisesLines = premises.split(',').map(s => s.trim()).filter(s => s !== '');
+            const formattedInput = [...premisesLines, '---------------', conclusion.trim()].join('\n');
+            const lines = formattedInput.split('\n');
+            return createStructuredFormula(lines);
+        }
+    } else if (isFormula) {
+        return parseAndVisit(input, 0);
+    } else {
+        const lines = input.split('\n');
+        return createStructuredFormula(lines);
+    }
 }
 
 function parseAndVisit(input, lineNumberOffset) {
-    console.log(input)
     let hasErrors = false;
 
     const chars = new antlr4.InputStream(input);
@@ -533,360 +133,6 @@ function parseAndVisit(input, lineNumberOffset) {
     return visitor.visit(tree);
 }
 
-document.getElementById('openFile').addEventListener('click', function() {
-    document.getElementById('fileInput').click();
-});
-
-document.getElementById('fileInput').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            var contents = e.target.result;
-            editor.setValue(contents);
-            replaceInputSymbolsInMonaco(editor);
-        };
-        reader.readAsText(file);
-    }
-});
-
-
-function displayError(message, line, column, offendingSymbol) {
-    const startColumn = column;
-    const endColumn = column + (offendingSymbol ? offendingSymbol.text.length : 1);
-
-    const errorMarker = {
-        severity: monaco.MarkerSeverity.Error,
-        startLineNumber: line,
-        startColumn: startColumn,
-        endLineNumber: line,
-        endColumn: endColumn,
-        message: message
-    };
-
-    monaco.editor.setModelMarkers(editor.getModel(), 'propositional-logic-language', [errorMarker]);
-
-    resolveButton.disabled = true;
-}
-
-
-function buildTreeDataCommon(steps) {
-    const lastStep = steps[steps.length - 1];
-    const rootNode = {
-        name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : lastStep.result,
-        children: []
-    };
-    
-    lastStep.resolved.forEach(resolved => {
-        rootNode.children.push({
-            name: `{${resolved.join(', ')}}`,
-            children: []
-        });
-    });
-
-    function addChildrenToNode(node, stepIndex) {
-        if (stepIndex < 0) return;
-
-        const currentStep = steps.find(step => (Array.isArray(step.result) ? step.result.join(', ') : step.result) === node.name.replace(/[{}]/g, ''));
-
-        if (currentStep) {
-            currentStep.resolved.forEach(resolved => {
-                const childNode = {
-                    name: `{${resolved.join(', ')}}`,
-                    children: []
-                };
-                node.children.push(childNode);
-                addChildrenToNode(childNode, stepIndex - 1);
-            });
-        }
-    }
-
-    rootNode.children.forEach(childNode => {
-        addChildrenToNode(childNode, steps.length - 2);
-    });
-
-    return rootNode;
-}
-
-function buildTreeDataLinear(steps) {
-    const lastStep = steps[steps.length - 1];
-    const rootNode = {
-        name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : `{${lastStep.result.join(', ')}}`,
-        children: []
-    };
-    
-    lastStep.resolved.forEach(resolved => {
-        rootNode.children.push({
-            name: `{${resolved.join(', ')}}`,
-            children: []
-        });
-    });
-
-    function addChildrenToNode(node, stepIndex) {
-        if (stepIndex < 0) return;
-
-        const currentStep = steps[stepIndex];
-        if (currentStep && `{${currentStep.result.join(', ')}}` === node.name) {
-            currentStep.resolved.forEach(resolved => {
-                const childNode = {
-                    name: `{${resolved.join(', ')}}`,
-                    children: []
-                };
-                node.children.push(childNode);
-                addChildrenToNode(childNode, stepIndex - 1);
-            });
-        }
-    }
-
-    rootNode.children.forEach(childNode => {
-        addChildrenToNode(childNode, steps.length - 2);
-    });
-
-    return rootNode;
-}
-
-
-function downloadSVG(svgElement, fileName, styles) {
-    const cloneSvgElement = svgElement.cloneNode(true);
-
-    const styleElement = document.createElement("style");
-    styleElement.textContent = styles;
-    cloneSvgElement.prepend(styleElement);
-
-    const serializer = new XMLSerializer();
-    let source = serializer.serializeToString(cloneSvgElement);
-
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
-
-    const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
-
-    const downloadLink = document.createElement("a");
-    downloadLink.href = url;
-    downloadLink.download = fileName;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-}
-
-function drawTree(data, treeContainer) {
-    const width = 400;
-    const height = 400;
-    const margin = { top: 20, right: 0, bottom: 30, left: 0 };
-
-    const svg = d3.select(treeContainer).append('svg')
-        .attr('width', width + margin.right + margin.left)
-        .attr('height', height + margin.top + margin.bottom)
-        .call(d3.zoom().on("zoom", function (event) {
-            svg.attr("transform", event.transform);
-        }))
-        .append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-    const treemap = d3.tree()
-        .size([width - margin.left - margin.right, height - margin.top - margin.bottom])
-        .separation((a, b) => a.parent === b.parent ? 1 : 2);
-
-    let root = d3.hierarchy(data, d => d.children);
-    treemap(root);
-
-    root.descendants().forEach(d => {
-        d.y = height - d.y;
-    });
-
-    const drag = d3.drag()
-        .on('start', dragStarted)
-        .on('drag', dragging)
-        .on('end', dragEnded);
-
-    function dragStarted(event, d) {
-        d3.select(this).raise().attr('stroke', 'black');
-    }
-
-    function dragging(event, d) {
-        d.x = event.x;
-        d.y = event.y;
-        d3.select(this).attr("transform", `translate(${d.x},${d.y})`);
-        updateLinks();
-    }
-
-    function dragEnded(event, d) {
-        d3.select(this).attr('stroke', null);
-    }
-
-    function updateLinks() {
-        link.attr('d', d3.linkVertical()
-            .x(d => d.x)
-            .y(d => d.y))
-    }
-
-    const link = svg.selectAll('.link')
-        .data(root.links())
-        .enter().append('path')
-        .attr('class', 'link')
-        .attr('d', d3.linkVertical()
-            .x(d => d.x)
-            .y(d => d.y))
-
-    const node = svg.selectAll('.node')
-        .data(root.descendants())
-        .enter().append('g')
-        .attr('class', d => 'node' + (d.children ? ' node--internal' : ' node--leaf'))
-        .attr('transform', d => `translate(${d.x},${d.y})`)
-        .call(drag);
-
-    node.append('circle')
-        .attr('r', 10);
-
-    node.append('text')
-        .attr('dy', '0.35em')
-        .attr('x', d => d.children ? -13 : 13)
-        .style('text-anchor', d => d.children ? 'end' : 'start')
-        .style('font-size', '15px')
-        .text(d => d.data.name);
-}
-
-function clearTree(treeContainer) {
-    const svgContainer = d3.select(treeContainer);
-    svgContainer.selectAll('*').remove();
-}
-
-function createResolutionStep(step, stepNumber) {
-    const stepDiv = document.createElement('div');
-    stepDiv.className = 'resolution-step';
-    stepDiv.style.alignItems = 'center';
-
-    const clausesLineContainer = document.createElement('div');
-    clausesLineContainer.className = 'clauses-line-container';
-
-    step.resolved.forEach(clause => {
-        const clauseDiv = document.createElement('div');
-        clauseDiv.className = 'clause';
-        const clauseText = `\\Large{${Array.isArray(clause) ? clause.join(' \\vee ') : clause}}`;
-        clauseDiv.innerHTML = `$$${clauseText}$$`;
-        clausesLineContainer.appendChild(clauseDiv);
-    });
-
-
-    const lineDiv = document.createElement('div');
-    lineDiv.className = 'line';
-    clausesLineContainer.appendChild(lineDiv);
-
-    const resultDiv = document.createElement('div');
-    resultDiv.className = 'result';
-    if (Array.isArray(step.result)) {
-        resultDiv.innerHTML = step.result.length > 0 ? `$$\\Large{${step.result.join(' \\vee ')}}$$` : '$$\\bot$$';
-    } else {
-        resultDiv.innerHTML = step.result === "[]" ? '$$\\bot$$' : `$$\\Large{${step.result}}$$`;
-    }
-    clausesLineContainer.appendChild(resultDiv);
-    stepDiv.appendChild(clausesLineContainer);
-
-    MathJax.typesetPromise([stepDiv]);
-
-    return stepDiv;
-}
-
-buttonDynamicSVG.addEventListener('click', function() {
-    const svgElement = document.querySelector('#dynamic-tree-container svg');
-
-    if (svgElement) {
-        downloadSVG(svgElement, 'myTree.svg', cssStyles);
-    } else {
-        displayMessage("Nebol vytvorený žiaden strom na stiahnutie.", 'error')
-    }
-});
-
-function divsOfExplanation() {
-    const CNFMessage = document.getElementById('cnf-formula');
-    const clausesMessage = document.getElementById('clauses');
-    const negationFormula = document.getElementById('negation-formula');
-    const resolutionContainer = document.getElementById("resolution-container");
-    const resolutionResultElement = document.getElementById('resolution-result');
-    const stepByStepResolution = document.getElementById('stepByStepResolution');
-    const clause1Select = document.getElementById('clause1');
-    const clause2Select = document.getElementById('clause2');
-    const historyElement = document.getElementById('history');
-    const negatedFormula = document.getElementById('negated-formula');
-    const cnfResult = document.getElementById('cnf-result');
-    const clausesResult = document.getElementById('clauses-result');
-    const descFormula = document.getElementById('description-formula');
-    const descCNF = document.getElementById('description-cnf');
-    const descClauses = document.getElementById('description-clauses');
-    const resultInterpretation = document.getElementById('result-interpretation')
-    const stepsExplanation = document.getElementById('steps-explanation');
-    const dotLines = document.getElementsByClassName('dotted-line-background');
-
-    historyElement.innerHTML = '';
-    clearTree("#tree-container");
-    clearTree("#dynamic-tree-container");
-    clearTableResolutionInterpretation();
-
-    CNFMessage.innerHTML = '';
-    clausesMessage.innerHTML = '';
-    clausesResult.style.visibility = 'hidden';
-    negationFormula.style.visibility = 'hidden';
-    cnfResult.style.visibility = 'hidden'
-    resolutionContainer.innerHTML = '';
-    resolutionResultElement.innerHTML = '';
-    negatedFormula.innerHTML = '';
-    descFormula.innerHTML = '';
-    descClauses.innerHTML = '';
-    dotLines[0].style.visibility = 'hidden';
-    dotLines[1].style.visibility = 'hidden';
-
-    descCNF.innerHTML = '';
-    resultInterpretation.style.visibility = 'hidden';
-    stepsExplanation.style.visibility = 'hidden';
-
-    stepByStepResolution.style.display = 'none';
-    clause1Select.innerHTML = '';
-    clause2Select.innerHTML = '';
-
-    return {CNFMessage, clausesMessage, negationFormula, resolutionContainer, resolutionResultElement,
-        stepByStepResolution, clause1Select, clause2Select, historyElement, negatedFormula, cnfResult,
-        clausesResult, descClauses, descFormula, descCNF, resultInterpretation, stepsExplanation, dotLines};
-}
-
-
-function updateClauseSelections(clauses) {
-    const select1 = document.getElementById('clause1');
-    const select2 = document.getElementById('clause2');
-
-    select1.innerHTML = '';
-    select2.innerHTML = '';
-
-    clauses.forEach((clause, index) => {
-        let option1 = new Option(convertInteractiveActualClausesToLatex(clause), index);
-        let option2 = new Option(convertInteractiveActualClausesToLatex(clause), index);
-        select1.add(option1);
-        select2.add(option2);
-    });
-
-    MathJax.typesetPromise();
-}
-
-/**
- * Updates the actual list of clauses (part of interactive proving)
- * @param clauses
- */
-function updateCurrentClausesDisplay(clauses) {
-    const currentClausesElement = document.getElementById('currentClauses');
-    currentClausesElement.innerHTML = '';
-
-    clauses.forEach(clause => {
-        console.log("clauses" + clause)
-        const clauseCard = document.createElement('div');
-        clauseCard.className = 'clause-card';
-        clauseCard.textContent = convertInteractiveActualClausesToLatex(clause);
-        currentClausesElement.appendChild(clauseCard);
-    });
-    MathJax.typesetPromise();
-}
-
-/**
- * Applies resolution rule on the pair of clauses and interpret results, creates history,
- * dynamic proof tree and defines when formula is proved (part of interactive proving).
- */
 function applyResolution() {
     if (resolutionFound) {
         displayMessage("Riešenie sa už našlo. Ďalšie použitie pravidla rezolúcie nie je možné.", 'warning');
@@ -896,8 +142,6 @@ function applyResolution() {
 
     updateResolutionTable(initialClauses);
     clausesForEach = clausesForEach.filter(clause => clause.length > 0);
-
-    console.log("HORRAY", initialClauses)
 
     const clause1 = clausesForEach[document.getElementById('clause1').value];
     const clause2 = clausesForEach[document.getElementById('clause2').value];
@@ -928,11 +172,9 @@ function applyResolution() {
         const historyElement = document.getElementById('history');
         const step = { resolved: [clause1, clause2], result: result };
         steps.push(step);
-        console.log(steps)
 
         undoStack.push(step);
         redoStack = [];
-
 
         const stepElement = createResolutionStep(step, stepNumber);
         historyElement.appendChild(stepElement);
@@ -957,128 +199,6 @@ function applyResolution() {
         stepNumber++;
     }
 }
-
-function findClauseIndex(clause, clausesArray) {
-    const clauseStr = clause.join(', ');
-    for (let i = 0; i < clausesArray.length; i++) {
-        if (`${clausesArray[i].join(', ')}` === clauseStr) {
-            return i + 1;
-        }
-    }
-    return -1;
-}
-
-function formatClause(clauseArray) {
-    if (clauseArray.length === 0) {
-        return "⊥";
-    } else {
-        return `{${clauseArray.join(', ')}}`;
-    }
-}
-
-function updateResolutionTable(initialClauses) {
-    const tableContainer = document.getElementById("table-resolution-interpretation");
-    tableContainer.innerHTML = "";
-
-    const table = document.createElement("table");
-    table.classList.add("resolution-table");
-    const thead = document.createElement("thead");
-    const tbody = document.createElement("tbody");
-    const headerRow = document.createElement("tr");
-
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-    table.appendChild(tbody);
-
-    initialClauses.forEach((clauseArray, index) => {
-        const row = document.createElement("tr");
-        addCell(row, index + 1);
-        addCell(row, `{${clauseArray.join(', ')}}`);
-        addCell(row, "-");
-        tbody.appendChild(row);
-    });
-
-    steps.forEach((step, index) => {
-        const row = document.createElement("tr");
-        const stepNumber = initialClauses.length + index + 1;
-
-        addCell(row, stepNumber);
-        addCell(row, formatClause(step.result));
-
-        const combinedClauses = initialClauses.concat(steps.slice(0, index).map(s => s.result));
-
-        const source1 = findClauseIndex(step.resolved[0], combinedClauses);
-        const source2 = findClauseIndex(step.resolved[1], combinedClauses);
-        const source = source1 !== -1 && source2 !== -1 ? `${source1} a ${source2}` : "-";
-        addCell(row, source);
-
-        tbody.appendChild(row);
-    });
-
-    tableContainer.appendChild(table);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    const modeSwitches = document.querySelectorAll('input[name="mode"]');
-
-    const dynamicTree = document.querySelector('.Dynamic-Tree');
-    const tableResolution = document.getElementById('table-resolution-interpretation');
-
-    function updateVisibility() {
-        const selectedMode = document.querySelector('input[name="mode"]:checked').value;
-
-        if (selectedMode === 'tree') {
-            dynamicTree.style.display = 'flex';
-            tableResolution.style.display = 'none';
-        } else if (selectedMode === 'table') {
-            dynamicTree.style.display = 'none';
-            tableResolution.style.display = 'flex';
-        }
-    }
-
-    modeSwitches.forEach(function (switcher) {
-        switcher.addEventListener('change', updateVisibility);
-    });
-
-    updateVisibility();
-});
-
-function addCell(row, text) {
-    const cell = document.createElement("td");
-    cell.textContent = text;
-    row.appendChild(cell);
-}
-function clearTableResolutionInterpretation() {
-    const tableContainer = document.getElementById("table-resolution-interpretation");
-    tableContainer.innerHTML = "";
-}
-
-
-
-document.getElementById('dimacs').addEventListener('click', function() {
-    document.getElementById('dimacsInput').click();
-});
-
-document.getElementById('dimacsInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) {
-        return;
-    }
-
-    isDIMACS = true;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const content = e.target.result;
-        try {
-            const expression = parseDIMACS(content);
-            insertIntoMonacoEditor(expression);
-        } catch (error) {
-            showModalError(error.message);
-        }
-    };
-    reader.readAsText(file);
-});
 
 function parseDIMACS(content) {
     const lines = content.trim().split('\n');
@@ -1125,7 +245,6 @@ function parseDIMACS(content) {
     return expression;
 }
 
-
 function showModalError(message) {
     const modal = document.getElementById('errorModal');
     const errorMessage = document.getElementById('errorMessage');
@@ -1148,7 +267,6 @@ function showModalError(message) {
 function insertIntoMonacoEditor(expression) {
     editor.setValue(expression);
     startProving();
-
 }
 
 function displayMessage(message, type = 'info') {
@@ -1178,21 +296,6 @@ function displayMessage(message, type = 'info') {
     }, 5000);
 }
 
-let buttonSVG = document.createElement('button');
-buttonSVG.id = 'download-btn';
-buttonSVG.innerHTML = "<svg height=\"200px\" width=\"200px\" version=\"1.1\" id=\"_x32_\" xmlns=\"http://www.w3.org/2000/svg\"  viewBox=\"0 0 512 512\" xml:space=\"preserve\" fill=\"#000000\"><g id=\"SVGRepo_bgCarrier\" stroke-width=\"0\"></g><g id=\"SVGRepo_tracerCarrier\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></g><g id=\"SVGRepo_iconCarrier\"> <style type=\"text/css\"> .st0{fill:#<svg height=\"200px\" width=\"200px\" version=\"1.1\" id=\"_x32_\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 512 512\" xml:space=\"preserve\" fill=\"#000000\"><g id=\"SVGRepo_bgCarrier\" stroke-width=\"0\"></g><g id=\"SVGRepo_tracerCarrier\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></g><g id=\"SVGRepo_iconCarrier\"> <style type=\"text/css\"> .st0{fill:#094e86;} </style> <g> <path class=\"st0\" d=\"M378.409,0H208.294h-13.176l-9.314,9.315L57.017,138.101l-9.314,9.315v13.176v265.513 c0,47.36,38.528,85.896,85.895,85.896h244.811c47.361,0,85.888-38.535,85.888-85.896V85.896C464.297,38.528,425.77,0,378.409,0z M432.493,426.104c0,29.877-24.214,54.091-54.084,54.091H133.598c-29.877,0-54.091-24.214-54.091-54.091V160.592h83.717 c24.884,0,45.07-20.179,45.07-45.071V31.804h170.114c29.87,0,54.084,24.214,54.084,54.091V426.104z\"></path> <path class=\"st0\" d=\"M180.296,296.668l-4.846-0.67c-10.63-1.487-14.265-4.978-14.265-10.104c0-5.78,4.309-9.817,12.383-9.817 c5.653,0,11.305,1.62,15.745,3.764c1.886,0.942,3.903,1.487,5.789,1.487c4.845,0,8.612-3.63,8.612-8.616 c0-3.226-1.481-5.921-4.71-7.939c-5.384-3.372-15.476-6.06-25.572-6.06c-19.781,0-32.436,11.171-32.436,27.998 c0,16.15,10.232,24.898,28.938,27.454l4.846,0.67c10.903,1.48,14.129,4.846,14.129,10.229c0,6.326-5.247,10.766-14.939,10.766 c-6.727,0-12.111-1.745-19.645-5.921c-1.616-0.942-3.634-1.62-5.788-1.62c-5.115,0-8.885,3.91-8.885,8.756 c0,3.226,1.616,6.326,4.713,8.344c6.054,3.764,15.878,7.8,28.798,7.8c23.823,0,35.934-12.24,35.934-28.795 C209.097,307.84,199.273,299.356,180.296,296.668z\"></path> <path class=\"st0\" d=\"M281.108,259.382c-4.577,0-7.939,2.43-9.556,7.674l-16.69,54.51h-0.402l-17.634-54.51 c-1.745-5.244-4.978-7.674-9.551-7.674c-5.653,0-9.692,4.176-9.692,9.287c0,1.347,0.269,2.834,0.67,4.175l23.286,68.104 c2.96,8.477,6.727,11.57,12.652,11.57c5.785,0,9.555-3.093,12.516-11.57l23.282-68.104c0.406-1.341,0.674-2.828,0.674-4.175 C290.664,263.558,286.76,259.382,281.108,259.382z\"></path> <path class=\"st0\" d=\"M364.556,300.836h-18.841c-5.114,0-8.344,3.1-8.344,7.806c0,4.713,3.23,7.814,8.344,7.814h6.193 c0.538,0,0.803,0.258,0.803,0.803c0,3.505-0.265,6.598-1.075,9.014c-1.882,5.796-7.67,9.426-14.669,9.426 c-7.943,0-12.921-3.903-14.939-10.096c-1.075-3.365-1.48-7.8-1.48-19.648c0-11.842,0.405-16.15,1.48-19.516 c2.018-6.325,6.867-10.228,14.67-10.228c5.924,0,10.362,1.885,13.859,6.724c2.695,3.777,5.387,4.852,8.749,4.852 c4.981,0,9.021-3.638,9.021-8.888c0-2.151-0.674-4.035-1.752-5.921c-4.842-8.204-15.071-14.264-29.877-14.264 c-16.287,0-28.935,7.408-33.644,22.204c-2.022,6.466-2.559,11.576-2.559,25.038c0,13.454,0.538,18.573,2.559,25.031 c4.709,14.802,17.357,22.204,33.644,22.204c16.286,0,28.668-8.204,33.374-22.881c1.617-5.111,2.29-12.645,2.29-20.716v-0.95 C372.362,303.664,369.538,300.836,364.556,300.836z\"></path> </g> </g></svg>;} </style> <g> <path class=\"st0\" d=\"M378.409,0H208.294h-13.176l-9.314,9.315L57.017,138.101l-9.314,9.315v13.176v265.513 c0,47.36,38.528,85.896,85.895,85.896h244.811c47.361,0,85.888-38.535,85.888-85.896V85.896C464.297,38.528,425.77,0,378.409,0z M432.493,426.104c0,29.877-24.214,54.091-54.084,54.091H133.598c-29.877,0-54.091-24.214-54.091-54.091V160.592h83.717 c24.884,0,45.07-20.179,45.07-45.071V31.804h170.114c29.87,0,54.084,24.214,54.084,54.091V426.104z\"></path> <path class=\"st0\" d=\"M180.296,296.668l-4.846-0.67c-10.63-1.487-14.265-4.978-14.265-10.104c0-5.78,4.309-9.817,12.383-9.817 c5.653,0,11.305,1.62,15.745,3.764c1.886,0.942,3.903,1.487,5.789,1.487c4.845,0,8.612-3.63,8.612-8.616 c0-3.226-1.481-5.921-4.71-7.939c-5.384-3.372-15.476-6.06-25.572-6.06c-19.781,0-32.436,11.171-32.436,27.998 c0,16.15,10.232,24.898,28.938,27.454l4.846,0.67c10.903,1.48,14.129,4.846,14.129,10.229c0,6.326-5.247,10.766-14.939,10.766 c-6.727,0-12.111-1.745-19.645-5.921c-1.616-0.942-3.634-1.62-5.788-1.62c-5.115,0-8.885,3.91-8.885,8.756 c0,3.226,1.616,6.326,4.713,8.344c6.054,3.764,15.878,7.8,28.798,7.8c23.823,0,35.934-12.24,35.934-28.795 C209.097,307.84,199.273,299.356,180.296,296.668z\"></path> <path class=\"st0\" d=\"M281.108,259.382c-4.577,0-7.939,2.43-9.556,7.674l-16.69,54.51h-0.402l-17.634-54.51 c-1.745-5.244-4.978-7.674-9.551-7.674c-5.653,0-9.692,4.176-9.692,9.287c0,1.347,0.269,2.834,0.67,4.175l23.286,68.104 c2.96,8.477,6.727,11.57,12.652,11.57c5.785,0,9.555-3.093,12.516-11.57l23.282-68.104c0.406-1.341,0.674-2.828,0.674-4.175 C290.664,263.558,286.76,259.382,281.108,259.382z\"></path> <path class=\"st0\" d=\"M364.556,300.836h-18.841c-5.114,0-8.344,3.1-8.344,7.806c0,4.713,3.23,7.814,8.344,7.814h6.193 c0.538,0,0.803,0.258,0.803,0.803c0,3.505-0.265,6.598-1.075,9.014c-1.882,5.796-7.67,9.426-14.669,9.426 c-7.943,0-12.921-3.903-14.939-10.096c-1.075-3.365-1.48-7.8-1.48-19.648c0-11.842,0.405-16.15,1.48-19.516 c2.018-6.325,6.867-10.228,14.67-10.228c5.924,0,10.362,1.885,13.859,6.724c2.695,3.777,5.387,4.852,8.749,4.852 c4.981,0,9.021-3.638,9.021-8.888c0-2.151-0.674-4.035-1.752-5.921c-4.842-8.204-15.071-14.264-29.877-14.264 c-16.287,0-28.935,7.408-33.644,22.204c-2.022,6.466-2.559,11.576-2.559,25.038c0,13.454,0.538,18.573,2.559,25.031 c4.709,14.802,17.357,22.204,33.644,22.204c16.286,0,28.668-8.204,33.374-22.881c1.617-5.111,2.29-12.645,2.29-20.716v-0.95 C372.362,303.664,369.538,300.836,364.556,300.836z\"></path> </g> </g></svg>"
-buttonSVG.style.display = 'none';
-buttonSVG.setAttribute('title', 'Stiahnuť strom vo formáte SVG');
-
-buttonDynamicSVG.setAttribute('title', 'Stiahnuť strom vo formáte SVG');
-
-let buttonLaTeX = document.createElement('button');
-buttonLaTeX.id = 'latex-tree-generate';
-buttonLaTeX.innerHTML = "<svg viewBox=\"0 0 64 64\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><g id=\"SVGRepo_bgCarrier\" stroke-width=\"0\"></g><g id=\"SVGRepo_tracerCarrier\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></g><g id=\"SVGRepo_iconCarrier\"><path d=\"M18.525 31.482h-.482c-.192 1.966-.462 4.357-3.855 4.357h-1.562c-.905 0-.944-.136-.944-.772V24.831c0-.655 0-.925 1.812-.925h.636v-.578c-.694.058-2.429.058-3.22.058-.751 0-2.255 0-2.91-.058v.578h.443c1.485 0 1.523.212 1.523.906v10.12c0 .694-.038.907-1.523.907H8v.597h10.005l.52-4.954z\" fill=\"#094e86\"></path><path d=\"M18.198 23.308c-.078-.23-.116-.308-.367-.308-.25 0-.308.077-.385.308l-3.104 7.866c-.135.327-.366.925-1.561.925v.482h2.988v-.482c-.598 0-.964-.27-.964-.656 0-.096.02-.135.058-.27l.655-1.657h3.817l.771 1.966a.65.65 0 0 1 .077.231c0 .386-.732.386-1.099.386v.482h3.798v-.482h-.27c-.906 0-1.002-.135-1.137-.52l-3.277-8.27zm-.771 1.37 1.715 4.356h-3.431l1.716-4.357z\" fill=\"#094e86\"></path><path d=\"M33.639 23.443h-11.74l-.347 4.318h.463c.27-3.103.558-3.74 3.47-3.74.346 0 .848 0 1.04.04.405.076.405.288.405.732v10.12c0 .656 0 .926-2.024.926h-.771v.597c.79-.058 2.737-.058 3.624-.058s2.872 0 3.663.058v-.597h-.771c-2.024 0-2.024-.27-2.024-.926v-10.12c0-.386 0-.656.347-.733.212-.038.732-.038 1.098-.038 2.892 0 3.181.636 3.45 3.74h.483l-.366-4.319z\" fill=\"#094e86\"></path><path d=\"M43.971 35.82h-.482c-.482 2.949-.925 4.356-4.221 4.356h-2.545c-.906 0-.945-.135-.945-.771v-5.128h1.716c1.87 0 2.082.617 2.082 2.255h.482v-5.089h-.482c0 1.639-.212 2.236-2.082 2.236h-1.716v-4.607c0-.636.039-.77.945-.77h2.467c2.95 0 3.451 1.06 3.76 3.739h.481l-.54-4.318H32.097v.578h.444c1.484 0 1.523.212 1.523.906V39.27c0 .694-.039.906-1.523.906h-.444v.597h11.065l.81-4.954z\" fill=\"#094e86\"></path><path d=\"m49.773 29.014 2.641-3.855c.405-.617 1.06-1.234 2.776-1.253v-.578h-4.588v.578c.772.02 1.196.443 1.196.887 0 .192-.039.231-.174.443l-2.198 3.239-2.467-3.702c-.039-.057-.135-.212-.135-.289 0-.231.424-.559 1.234-.578v-.578c-.656.058-2.063.058-2.795.058-.598 0-1.793-.02-2.506-.058v.578h.366c1.06 0 1.426.135 1.793.675l3.527 5.34-3.142 4.645c-.27.386-.848 1.273-2.776 1.273v.597h4.588v-.597c-.886-.02-1.214-.54-1.214-.887 0-.174.058-.25.193-.463l2.718-4.029 3.045 4.588c.039.077.097.154.097.212 0 .232-.424.56-1.253.579v.597c.675-.058 2.082-.058 2.795-.058.81 0 1.696.02 2.506.058v-.597h-.366c-1.003 0-1.407-.097-1.812-.694l-4.049-6.13z\" fill=\"#094e86\"></path></g></svg>";
-buttonLaTeX.style.display = 'none';
-buttonLaTeX.setAttribute('title', 'LaTeX');
-
-
 function showResultOfResolutionMethod(result) {
     const resolutionResultElement = document.getElementById('resolution-result');
     const inputFormula = model.getValue();
@@ -1217,10 +320,6 @@ function showResultOfResolutionMethod(result) {
     }
 }
 
-/**
- * Generates an explanation of resolution method, including visualizing trees and interactive proving
- * @param clauses
- */
 function resolutionExplanation(clauses) {
     clausesForEach = clauses;
     initialClauses = clauses;
@@ -1233,8 +332,6 @@ function resolutionExplanation(clauses) {
 
     const stepByStepContainer = document.getElementById('stepByStepResolution');
     stepByStepContainer.style.display = 'block';
-
-    console.log(clauses)
 
     const strategyFunctions = {
         withoutStrategy: resolutionCommon,
@@ -1250,12 +347,9 @@ function resolutionExplanation(clauses) {
     let result = currentStrategy ? strategyFunctions[currentStrategy](clauses) : null;
 
 
-    console.log("STEPS COMMON: ", result.steps)
     clearTree("#dynamic-tree-container");
     clearTableResolutionInterpretation();
     clearTree("#tree-container");
-
-    // TODO: make a condition 'if(result.isProved === false)'
 
     if (result.steps.length === 0) {
         resolutionContainer.textContent = 'Žiadne kroky rezolúcie neboli vykonané, nenašli sa komplementárne literály.';
@@ -1285,15 +379,12 @@ function resolutionExplanation(clauses) {
             treeData = buildTreeDataCommon(result.steps);
         }
 
-        console.log(treeData)
 
         let tikzCode = buildTikzPicture(treeData);
 
         buttonLaTeX.onclick = function() {
             showModalWithText(tikzCode);
         };
-
-        console.log(tikzCode);
 
         if (treeData) {
             drawTree(treeData, "#tree-container");
@@ -1326,146 +417,6 @@ function resolutionExplanation(clauses) {
     }
 }
 
-
-function generateTikzCode(node, indentLevel = 1, isRoot = false) {
-    let childIndent = "\t".repeat(indentLevel + 1);
-
-    let nodeName = node.name
-        .replace("□", "$\\square$")
-        .replace(/\{([^}]*)}/g, (match, p1) => `{$\\{${p1.replace("¬", "\\neg ")}\\}$}`);
-
-
-    if (!node.children || node.children.length === 0) {
-        return `${isRoot ? '\\node' : 'node'} {${nodeName}}`;
-    }
-
-    let childrenStr = node.children.map((child, index) => {
-        let suffix = (isRoot && index === node.children.length - 1) ? ';' : '';
-        return `${childIndent}child {${generateTikzCode(child, indentLevel + 2)} edge from parent}${suffix}\n`;
-    }).join('');
-
-    return `${isRoot ? '\\node' : 'node'} {${nodeName}} [grow=up]\n${childrenStr}`;
-}
-
-function buildTikzPicture(treeData) {
-    let tikzStr = "\\begin{tikzpicture}\n";
-
-    tikzStr += generateTikzCode(treeData,1,true);
-
-    tikzStr += "\\end{tikzpicture}";
-
-    return tikzStr;
-}
-
-function convertFormulasToLatex(expression) {
-
-    return expression
-        .replace(/⇒/g, '\\Rightarrow ')
-        .replace(/∧/g, '\\wedge ')
-        .replace(/∨/g, '\\vee ')
-        .replace(/¬/g, '\\neg ')
-        .replace(/⊢/g, '\\vdash ');
-}
-
-function convertClausesToLatex(clauses) {
-    return clauses.map(clause =>
-            "\\left\\{" + clause.map(literal => {
-                return literal;
-            }).join(', ') + "\\right\\}"
-    ).join(', ');
-}
-
-function convertActualClausesToLatex(clauses) {
-    return clauses.map((clause, index) => {
-        const clauseArray = Array.isArray(clause) ? clause : [clause];
-        if (clauseArray.length === 0) {
-            return "\\(\\color{green}{\\bot}\\)";
-        } else {
-            const isLastClause = index === clauses.length - 1;
-            const clauseText = clauseArray.map(literal => literal).join(', ');
-            if (isLastClause) {
-                return `{\\(\\color{green}{${clauseText}}\\)}`;
-            } else {
-                return `{\\(${clauseText}\\)}`;
-            }
-        }
-    }).join(', ');
-}
-
-function convertInteractiveActualClausesToLatex(clauses) {
-    if (clauses.length === 0) {
-        return "\\(\\bot\\)";
-    }
-    return "{\\(" + clauses.join(', ') + "\\)}";
-}
-
-
-editor.onDidChangeModelContent((event) => {
-    let edits = [];
-    const inputFormula = model.getValue();
-    const replacementPattern = /\/\/\//g;
-    let newText = inputFormula.replace(replacementPattern, '---------------\n');
-
-    if (inputFormula !== newText) {
-        edits.push({
-            range: model.getFullModelRange(),
-            text: newText
-        });
-
-        editor.executeEdits('', edits);
-
-        const numberOfLines = newText.split('\n').length;
-        editor.setPosition({ lineNumber: numberOfLines, column: 1 });
-    }
-
-
-    const lines = inputFormula.split('\n')
-    console.log("LINES BABE", lines)
-
-
-
-    if(inputFormula.includes('⊢')) {
-        logicalConsequence = checkSyntax(inputFormula, false);
-        document.getElementById('c1').disabled = true;
-    } else if (lines.length === 1) {
-
-        formula = checkSyntax(inputFormula, true);
-        document.getElementById('c1').disabled = false
-    } else if (lines.length > 1) {
-        logicalConsequence = checkSyntax(inputFormula, false);
-        document.getElementById('c1').disabled = true;
-
-    }
-});
-
-document.querySelectorAll('.keyboard-button').forEach(button => {
-    button.addEventListener('click', function() {
-        const value = this.getAttribute('data-value');
-
-        const selection = editor.getSelection();
-        const range = new monaco.Range(selection.startLineNumber, selection.startColumn, selection.endLineNumber, selection.endColumn);
-
-        editor.executeEdits('', [{
-            range: range,
-            text: value,
-            forceMoveMarkers: true
-        }]);
-
-        const newPosition = editor.getPosition();
-        editor.setPosition({
-            lineNumber: newPosition.lineNumber,
-            column: newPosition.column + value.length
-        });
-
-        editor.focus();
-    });
-});
-
-
-
-document.getElementById('undo').addEventListener('click', undo);
-document.getElementById('redo').addEventListener('click', redo);
-
 function undo() {
     if (undoStack.length === 0) {
         displayMessage("Nie je možné vykonať krok späť.", 'error');
@@ -1473,24 +424,13 @@ function undo() {
     }
 
     resolutionFound = false;
-
     clausesForEach.pop();
-
     const lastAction = undoStack.pop();
     redoStack.push(lastAction);
-
-    console.log("usedPairs before: ", usedPairs)
-
-
     let tempArray = Array.from(usedPairs);
-
     tempArray.pop();
-
     usedPairs = new Set(tempArray);
-
     steps.pop();
-    console.log("usedPairs after: ", usedPairs)
-    console.log(steps);
     updateUIAfterUndoOrRedo();
 }
 
@@ -1508,10 +448,6 @@ function redo() {
     const pairKey = resolvedParts.join("-");
 
     usedPairs.add(pairKey);
-
-    console.log("LUA", lastUndoneAction)
-
-    console.log("used pairs in redo", usedPairs)
 
     if(lastUndoneAction.result.length === 0 ) {
         resolutionFound = true;
@@ -1543,44 +479,6 @@ function updateUIAfterUndoOrRedo() {
 
     MathJax.typesetPromise();
 }
-
-strategiesSelect.addEventListener('change', function() {
-    isWithoutStrategy = this.value === 'without-strategy';
-    isLinearResolution = this.value === 'linear-resolution';
-    isUnitResolution = this.value === 'unit-resolution';
-
-    wasStrategyChanged = true;
-});
-
-
-document.getElementById('toggleHistory').onclick = function() {
-    const historyDiv = document.getElementById('history');
-    if (historyDiv.style.right === '0px') {
-        historyDiv.style.right = '-100%';
-    } else {
-        historyDiv.style.right = '0px';
-    }
-};
-
-const modal = document.getElementById("myModal");
-const btn = document.getElementById("help");
-const span = document.getElementsByClassName("close")[0];
-
-btn.onclick = function() {
-    modal.style.display = "block";
-    openTab(null, 'Všeobecné');
-}
-
-span.onclick = function() {
-    modal.style.display = "none";
-}
-
-window.onclick = function(event) {
-    if (event.target === modal) {
-        modal.style.display = "none";
-    }
-}
-
 
 function replaceText() {
     const model = editor.getModel();
@@ -1623,82 +521,10 @@ function replaceText() {
     }
 }
 
-editor.onDidChangeModelContent((event) => {
-    replaceText();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const checkbox = document.getElementById('c1');
-
-    isChecked = checkbox.checked;
-
-    checkbox.addEventListener('change', function() {
-        isChecked = checkbox.checked;
-        console.log('isChecked:', isChecked);
-    });
-});
-
-document.getElementById('keyboard-icon').addEventListener('click', function() {
-    const keyboard = document.getElementById('keyboard-container');
-    keyboard.style.display = keyboard.style.display === 'none' ? 'block' : 'none';
-    const rootStyle = document.documentElement.style;
-    const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--keyboard-icon-color').trim();
-    const newColor = currentColor === '#094e86' ? '#d6d6d6' : '#094e86';
-
-    rootStyle.setProperty('--keyboard-icon-color', newColor);
-});
-
-
-
-document.getElementById('toggleVisibilityButton').addEventListener('click', function() {
-    const resolutionContainer = document.getElementById('resolution-container');
-    const treeContainer = document.getElementById('tree-container');
-    const button = document.getElementById('toggleVisibilityButton');
-    const dotLines = document.getElementsByClassName('dotted-line-background');
-
-    if (resolutionContainer.style.display === "none") {
-        resolutionContainer.style.display = "block";
-        treeContainer.style.display = "block";
-        button.textContent = "Skryť kroky";
-        button.style.backgroundColor = 'white';
-        button.style.color = '#094e86';
-        button.style.border = '2px solid #f5f5f5';
-        dotLines[0].style.visibility = 'visible';
-        dotLines[1].style.visibility = 'visible';
-
-        console.log(isAnySteps)
-
-        if(isAnySteps) {
-            buttonSVG.style.display = 'block';
-            buttonLaTeX.style.display = 'block';
-        } else {
-            buttonSVG.style.display = 'none';
-            buttonLaTeX.style.display = 'none';
-        }
-
-        buttonSVG.addEventListener('click', function() {
-            const svgElement = document.querySelector('#tree-container svg');
-            downloadSVG(svgElement, 'my-tree.svg', cssStyles);
-        });
-
-
-        setTimeout(() => {
-            resolutionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-
-    } else {
-        resolutionContainer.style.display = "none";
-        treeContainer.style.display = "none";
-        button.textContent = "Zobraziť kroky";
-        button.style.backgroundColor = '#094e86';
-        button.style.color = 'white';
-        button.style.border = 'none';
-        dotLines[0].style.visibility = 'hidden';
-        dotLines[1].style.visibility = 'hidden';
-        buttonSVG.style.display = 'none';
-        buttonLaTeX.style.display = 'none';
-    }
-});
+function closePopup() {
+    document.getElementById("editing-buttons").style.display = "none";
+    document.getElementById("editing-buttons").classList.add("hidden");
+}
 
 function openTab(evt, tabName) {
     let i, tabcontent, tablinks;
@@ -1725,134 +551,6 @@ function openTab(evt, tabName) {
     }
 }
 
-window.openTab = openTab;
-
-function formulaExplanation(explanation) {
-    if (explanation.resolutionContainer.style.display === "block") {
-        explanation.dotLines[0].style.visibility = 'visible';
-        explanation.dotLines[1].style.visibility = 'visible';
-    }
-    let negFormula = formula;
-    if (!isChecked && !isDIMACS) {
-        negFormula = negFormula.not();
-        const latexNegFormulaString = convertFormulasToLatex(negFormula.toString());
-
-        explanation.negationFormula.style.visibility = 'visible';
-        explanation.descFormula.innerHTML = "<strong>1. krok</strong> je <strong>negácia</strong> formuly: ";
-        explanation.negatedFormula.innerHTML = `$$${latexNegFormulaString}$$`;
-    }
-
-    let simplifiedCnfFormula;
-    const CNF = negFormula.cnf();
-
-
-    if (!isDIMACS) {
-        simplifiedCnfFormula = Formula.simplifyCnfFormula(CNF);
-
-        if (simplifiedCnfFormula === '⊤') {
-            explanation.cnfResult.style.visibility = 'visible';
-            if (!isChecked) {
-                explanation.descCNF.innerHTML = "<strong>2. krokom</strong> je prevod formuly do <strong>CNF</strong>: ";
-            } else {
-                explanation.descCNF.innerHTML = "<strong>1. krok</strong> je prevod formuly do <strong>CNF</strong>: ";
-            }
-
-            explanation.CNFMessage.innerHTML = '$$\\top$$';
-        } else {
-            const latexCnfString = convertFormulasToLatex(simplifiedCnfFormula.toString());
-            explanation.cnfResult.style.visibility = 'visible';
-            if (!isChecked) {
-                explanation.descCNF.innerHTML = "<strong>2. krokom</strong> je prevod formuly do <strong>CNF</strong>: ";
-            } else {
-                explanation.descCNF.innerHTML = "<strong>1. krok</strong> je prevod formuly do <strong>CNF</strong>: ";
-            }
-            explanation.CNFMessage.innerHTML = `$$${latexCnfString}$$`;
-        }
-    } else {
-        simplifiedCnfFormula = CNF;
-    }
-
-
-    const clauses = Formula.extractClauses(simplifiedCnfFormula);
-    console.log('clauses ura ', clauses)
-    const latexClausesString = convertClausesToLatex(clauses);
-
-    document.getElementById('export-dimacs').addEventListener('click', () => {
-        try {
-            const dimacsText = clausesToDIMACSCNF(clauses);
-            showModalWithText(dimacsText);
-        } catch (error) {
-            showModalWithText('Chyba prevodu: ' + error.message);
-        }
-    });
-
-
-    explanation.clausesResult.style.visibility = 'visible';
-    if (!isChecked) {
-        if(isDIMACS) {
-            explanation.descClauses.innerHTML = "<strong>1. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
-        } else {
-            explanation.descClauses.innerHTML = "<strong>3. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
-        }
-    } else {
-        if(isDIMACS) {
-            explanation.descClauses.innerHTML = "<strong>1. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
-        } else {
-            explanation.descClauses.innerHTML = "<strong>2. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
-        }
-    }
-
-    if(simplifiedCnfFormula === '⊤') {
-        explanation.clausesMessage.innerHTML = '$$\\top$$';
-    } else {
-        explanation.clausesMessage.innerHTML = `$$${latexClausesString}$$`;
-    }
-
-    isDIMACS = false;
-    resolutionExplanation(clauses);
-}
-
-function showModalWithText(text) {
-    const modal = document.getElementById("myModalDIMACS");
-    const textElement = document.getElementById("modalText");
-    const copyButton = document.getElementById("copyButton");
-
-    textElement.textContent = text;
-
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            console.log("Text copied to clipboard");
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-        });
-    }
-
-    copyButton.onclick = () =>  {
-        copyToClipboard(textElement.textContent);
-        let tooltip = document.querySelector('.tooltiptext');
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        setTimeout(() => { tooltip.style.visibility = 'hidden'; tooltip.style.opacity = '0'; }, 2000);
-    };
-
-
-    modal.style.display = "block";
-
-    const span = document.getElementById('closeDimacs')
-
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    }
-}
-
-
-
 function clausesToDIMACSCNF(clauses) {
     const variables = new Set();
     const cnfClauses = clauses.map(clause => {
@@ -1873,8 +571,6 @@ function logicalSyllogismExplanation(explanation) {
         explanation.dotLines[1].style.visibility = 'visible';
     }
 
-    console.log(logicalConsequence)
-
     if(!wasStrategyChanged) {
 
         logicalConsequence[logicalConsequence.length - 1] = logicalConsequence[logicalConsequence.length - 1].not();
@@ -1884,7 +580,7 @@ function logicalSyllogismExplanation(explanation) {
         logicalConsequence[i] = logicalConsequence[i].cnf();
     }
 
-    let combinedCNFString = logicalConsequence.slice(0, -1) // Создаем копию массива без последнего элемента
+    let combinedCNFString = logicalConsequence.slice(0, -1)
         .map(cnf => "(" + cnf.toString() + ")").join(' ∧ ');
     const latexNegFormulaString = convertFormulasToLatex(combinedCNFString);
 
@@ -1922,11 +618,10 @@ function logicalSyllogismExplanation(explanation) {
     resolutionExplanation(clauses);
 }
 
-let lastInputTry = null;
-
 function startProving() {
     const inputFormula = model.getValue();
-    if (inputFormula !== lastInputTry || isChecked !== lastIsChecked || wasStrategyChanged) {
+    if (inputFormula !== lastInputTry || isNegationChecked !== lastIsChecked || wasStrategyChanged) {
+        isProvingStarted = true;
         const lines = inputFormula.split('\n').filter(line => line.trim() !== '');
         const explanation = divsOfExplanation();
         explanation.resultInterpretation.style.visibility = 'visible';
@@ -1945,11 +640,425 @@ function startProving() {
 
         MathJax.typesetPromise();
         lastInputTry = inputFormula;
-        lastIsChecked = isChecked;
+        lastIsChecked = isNegationChecked;
         wasStrategyChanged = false;
     }
 }
 
+function formulaExplanation(explanation) {
+    if (explanation.resolutionContainer.style.display === "block") {
+        explanation.dotLines[0].style.visibility = 'visible';
+        explanation.dotLines[1].style.visibility = 'visible';
+    }
+    let negFormula = formula;
+    if (!isNegationChecked && !isDIMACS) {
+        negFormula = negFormula.not();
+        const latexNegFormulaString = convertFormulasToLatex(negFormula.toString());
+
+        explanation.negationFormula.style.visibility = 'visible';
+        explanation.descFormula.innerHTML = "<strong>1. krok</strong> je <strong>negácia</strong> formuly: ";
+        explanation.negatedFormula.innerHTML = `$$${latexNegFormulaString}$$`;
+    }
+
+    let simplifiedCnfFormula;
+    const CNF = negFormula.cnf();
+
+
+    if (!isDIMACS) {
+        simplifiedCnfFormula = Formula.simplifyCnfFormula(CNF);
+
+        if (simplifiedCnfFormula === '⊤') {
+            explanation.cnfResult.style.visibility = 'visible';
+            if (!isNegationChecked) {
+                explanation.descCNF.innerHTML = "<strong>2. krokom</strong> je prevod formuly do <strong>CNF</strong>: ";
+            } else {
+                explanation.descCNF.innerHTML = "<strong>1. krok</strong> je prevod formuly do <strong>CNF</strong>: ";
+            }
+
+            explanation.CNFMessage.innerHTML = '$$\\top$$';
+        } else {
+            const latexCnfString = convertFormulasToLatex(simplifiedCnfFormula.toString());
+            explanation.cnfResult.style.visibility = 'visible';
+            if (!isNegationChecked) {
+                explanation.descCNF.innerHTML = "<strong>2. krokom</strong> je prevod formuly do <strong>CNF</strong>: ";
+            } else {
+                explanation.descCNF.innerHTML = "<strong>1. krok</strong> je prevod formuly do <strong>CNF</strong>: ";
+            }
+            explanation.CNFMessage.innerHTML = `$$${latexCnfString}$$`;
+        }
+    } else {
+        simplifiedCnfFormula = CNF;
+    }
+
+
+    const clauses = Formula.extractClauses(simplifiedCnfFormula);
+    const latexClausesString = convertClausesToLatex(clauses);
+
+    document.getElementById('export-dimacs').addEventListener('click', () => {
+        try {
+            const dimacsText = clausesToDIMACSCNF(clauses);
+            showModalWithText(dimacsText);
+        } catch (error) {
+            showModalWithText('Chyba prevodu: ' + error.message);
+        }
+    });
+
+
+    explanation.clausesResult.style.visibility = 'visible';
+    if (!isNegationChecked) {
+        if(isDIMACS) {
+            explanation.descClauses.innerHTML = "<strong>1. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
+        } else {
+            explanation.descClauses.innerHTML = "<strong>3. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
+        }
+    } else {
+        if(isDIMACS) {
+            explanation.descClauses.innerHTML = "<strong>1. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
+        } else {
+            explanation.descClauses.innerHTML = "<strong>2. krokom</strong> je použitie <strong>pravidla rezolúcie</strong> na jednotlivé klauzuly: ";
+        }
+    }
+
+    if(simplifiedCnfFormula === '⊤') {
+        explanation.clausesMessage.innerHTML = '$$\\top$$';
+    } else {
+        explanation.clausesMessage.innerHTML = `$$${latexClausesString}$$`;
+    }
+
+    isDIMACS = false;
+    resolutionExplanation(clauses);
+}
+
+function showModalWithText(text) {
+    const modal = document.getElementById("myModalDIMACS");
+    const textElement = document.getElementById("modalText");
+    const copyButton = document.getElementById("copyButton");
+
+    textElement.textContent = text;
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+        }).catch(err => {
+        });
+    }
+
+    copyButton.onclick = () =>  {
+        copyToClipboard(textElement.textContent);
+        let tooltip = document.querySelector('.tooltiptext');
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = '1';
+        setTimeout(() => { tooltip.style.visibility = 'hidden'; tooltip.style.opacity = '0'; }, 2000);
+    };
+
+
+    modal.style.display = "block";
+
+    const span = document.getElementById('closeDimacs')
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
+// LISTENERS
+
+editor.onDidChangeModelContent((event) => {
+    replaceText();
+});
+
+editor.onDidChangeModelContent((event) => {
+    let edits = [];
+    const inputFormula = model.getValue();
+    const replacementPattern = /\/\/\//g;
+    let newText = inputFormula.replace(replacementPattern, '---------------\n');
+
+    if (inputFormula !== newText) {
+        edits.push({
+            range: model.getFullModelRange(),
+            text: newText
+        });
+
+        editor.executeEdits('', edits);
+
+        const numberOfLines = newText.split('\n').length;
+        editor.setPosition({ lineNumber: numberOfLines, column: 1 });
+    }
+
+
+    const lines = inputFormula.split('\n')
+
+    if(inputFormula.includes('⊢')) {
+        logicalConsequence = checkSyntax(inputFormula, false);
+        document.getElementById('c1').disabled = true;
+    } else if (lines.length === 1) {
+
+        formula = checkSyntax(inputFormula, true);
+        document.getElementById('c1').disabled = false
+    } else if (lines.length > 1) {
+        logicalConsequence = checkSyntax(inputFormula, false);
+        document.getElementById('c1').disabled = true;
+
+    }
+});
+
+strategiesSelect.addEventListener('change', function() {
+    isWithoutStrategy = this.value === 'without-strategy';
+    isLinearResolution = this.value === 'linear-resolution';
+    isUnitResolution = this.value === 'unit-resolution';
+
+    if(isProvingStarted) {
+        wasStrategyChanged = true;
+    }
+});
+
+buttonDynamicSVG.addEventListener('click', function() {
+    const svgElement = document.querySelector('#dynamic-tree-container svg');
+
+    if (svgElement) {
+        downloadSVG(svgElement, 'my-tree.svg');
+    } else {
+        displayMessage("Nebol vytvorený žiaden strom na stiahnutie.", 'error')
+    }
+});
+
+btn.onclick = function() {
+    modal.style.display = "block";
+    openTab(null, 'Všeobecné');
+}
+
+span.onclick = function() {
+    modal.style.display = "none";
+}
+
+window.onclick = function(event) {
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('c1');
+
+    isNegationChecked = checkbox.checked;
+
+    checkbox.addEventListener('change', function() {
+        isNegationChecked = checkbox.checked;
+    });
+});
+
+document.getElementById('keyboard-icon').addEventListener('click', function() {
+    const keyboard = document.getElementById('keyboard-container');
+    keyboard.style.display = keyboard.style.display === 'none' ? 'block' : 'none';
+    const rootStyle = document.documentElement.style;
+    const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--keyboard-icon-color').trim();
+    const newColor = currentColor === '#094e86' ? '#d6d6d6' : '#094e86';
+
+    rootStyle.setProperty('--keyboard-icon-color', newColor);
+});
+
+document.getElementById('toggleHistory').onclick = function() {
+    const historyDiv = document.getElementById('history');
+    if (historyDiv.style.right === '0px') {
+        historyDiv.style.right = '-100%';
+    } else {
+        historyDiv.style.right = '0px';
+    }
+};
+
+document.querySelectorAll('.keyboard-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const value = this.getAttribute('data-value');
+
+        const selection = editor.getSelection();
+        const range = new monaco.Range(selection.startLineNumber, selection.startColumn, selection.endLineNumber, selection.endColumn);
+
+        editor.executeEdits('', [{
+            range: range,
+            text: value,
+            forceMoveMarkers: true
+        }]);
+
+        const newPosition = editor.getPosition();
+        editor.setPosition({
+            lineNumber: newPosition.lineNumber,
+            column: newPosition.column + value.length
+        });
+
+        editor.focus();
+    });
+});
+
+document.getElementById('undo').addEventListener('click', undo);
+
+document.getElementById('redo').addEventListener('click', redo);
+
+document.getElementById('toggleVisibilityButton').addEventListener('click', function() {
+    const resolutionContainer = document.getElementById('resolution-container');
+    const treeContainer = document.getElementById('tree-container');
+    const button = document.getElementById('toggleVisibilityButton');
+    const dotLines = document.getElementsByClassName('dotted-line-background');
+
+    if (resolutionContainer.style.display === "none") {
+        resolutionContainer.style.display = "block";
+        treeContainer.style.display = "block";
+        button.textContent = "Skryť kroky";
+        button.style.backgroundColor = 'white';
+        button.style.color = '#094e86';
+        button.style.border = '2px solid #f5f5f5';
+        dotLines[0].style.visibility = 'visible';
+        dotLines[1].style.visibility = 'visible';
+
+        if(isAnySteps) {
+            buttonSVG.style.display = 'block';
+            buttonLaTeX.style.display = 'block';
+        } else {
+            buttonSVG.style.display = 'none';
+            buttonLaTeX.style.display = 'none';
+        }
+
+        buttonSVG.addEventListener('click', function() {
+            const svgElement = document.querySelector('#tree-container svg');
+            if (svgElement) {
+                svgElement.style.display = 'block';
+                svgElement.setAttribute('width', '350px');
+                svgElement.setAttribute('height', '450px');
+                downloadSVG(svgElement, 'my-tree.svg');
+             }
+        });
+
+
+        setTimeout(() => {
+            resolutionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+
+    } else {
+        resolutionContainer.style.display = "none";
+        treeContainer.style.display = "none";
+        button.textContent = "Zobraziť kroky";
+        button.style.backgroundColor = '#094e86';
+        button.style.color = 'white';
+        button.style.border = 'none';
+        dotLines[0].style.visibility = 'hidden';
+        dotLines[1].style.visibility = 'hidden';
+        buttonSVG.style.display = 'none';
+        buttonLaTeX.style.display = 'none';
+    }
+});
+
+document.getElementById("menuButton").addEventListener("click", function() {
+    document.getElementById("editing-buttons").style.display = "block";
+});
+
+document.getElementById("menuButton").addEventListener("click", function() {
+    let popup = document.getElementById("editing-buttons");
+    popup.classList.remove("hidden");
+    popup.classList.add("show");
+});
+
+document.getElementById("closeMenuButton").addEventListener("click", function() {
+    let popup = document.getElementById("editing-buttons");
+    popup.classList.remove("show");
+});
+
+document.addEventListener("click", function(event) {
+    let popup = document.getElementById("editing-buttons");
+    if (!popup.contains(event.target) && event.target !== document.getElementById("menuButton")) {
+        popup.classList.add("hidden");
+        popup.classList.remove("show");
+    }
+});
+
+document.getElementById('openFile').addEventListener('click', function() {
+    document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const contents = e.target.result;
+            editor.setValue(contents);
+        };
+        reader.readAsText(file);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const modeSwitches = document.querySelectorAll('input[name="mode"]');
+
+    const dynamicTree = document.querySelector('.Dynamic-Tree');
+    const tableResolution = document.getElementById('table-resolution-interpretation');
+
+    function updateVisibility() {
+        const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+
+        if (selectedMode === 'tree') {
+            dynamicTree.style.display = 'flex';
+            tableResolution.style.display = 'none';
+        } else if (selectedMode === 'table') {
+            dynamicTree.style.display = 'none';
+            tableResolution.style.display = 'flex';
+        }
+    }
+
+    modeSwitches.forEach(function (switcher) {
+        switcher.addEventListener('change', updateVisibility);
+    });
+
+    updateVisibility();
+});
+
+window.addEventListener('resize', function() {
+    if (window.innerWidth <= 900) {
+        document.getElementById('first-half').style.width = '';
+        document.getElementById('second-half').style.width = '';
+    }
+    if (window.innerWidth > 900) {
+        const firstHalf = document.getElementById('first-half');
+        const divider = document.getElementById('divider');
+
+        divider.style.left = `${firstHalf.offsetWidth}px`;
+
+        editor.layout();
+    }
+    editor.layout();
+});
+
+document.getElementById('dimacs').addEventListener('click', function() {
+    document.getElementById('dimacsInput').click();
+});
+
+document.getElementById('dimacsInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    isDIMACS = true;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const content = e.target.result;
+        try {
+            const expression = parseDIMACS(content);
+            insertIntoMonacoEditor(expression);
+        } catch (error) {
+            showModalError(error.message);
+        }
+    };
+    reader.readAsText(file);
+});
+
 document.getElementById('resolveButton').addEventListener('click', function() {
     startProving();
 });
+
+window.openTab = openTab;
+window.closePopup = closePopup;
