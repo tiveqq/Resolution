@@ -729,6 +729,16 @@ function formulaExplanation(explanation) {
     resolutionExplanation(clauses);
 }
 
+function enablePointerEvents(enable) {
+    const action = enable ? "all" : "none";
+    document.getElementById("help").style.pointerEvents = action;
+    document.getElementById("dimacs").style.pointerEvents = action;
+    document.getElementById("fontSizeSelector").style.pointerEvents = action;
+    document.getElementById("pasteExampleSelector").style.pointerEvents = action;
+    document.getElementById("strategiesResolution").style.pointerEvents = action;
+    document.getElementById("openFile").style.pointerEvents = action;
+}
+
 function showModalWithText(text) {
     const modal = document.getElementById("myModalDIMACS");
     const textElement = document.getElementById("modalText");
@@ -953,52 +963,54 @@ document.getElementById('toggleVisibilityButton').addEventListener('click', func
 
 document.getElementById("menuButton").addEventListener("click", function() {
     document.getElementById("editing-buttons").style.display = "block";
-    document.getElementById("help").style.pointerEvents = "all";
-    document.getElementById("dimacs").style.pointerEvents = "all";
-    document.getElementById("fontSizeSelector").style.pointerEvents = "all";
-    document.getElementById("pasteExampleSelector").style.pointerEvents = "all";
-    document.getElementById("strategiesResolution").style.pointerEvents = "all";
-    document.getElementById("openFile").style.pointerEvents = "all";
+    enablePointerEvents(true);
 });
 
 document.getElementById("menuButton").addEventListener("click", function() {
     let popup = document.getElementById("editing-buttons");
     popup.classList.remove("hidden");
     popup.classList.add("show");
-    document.getElementById("help").style.pointerEvents = "all";
-    document.getElementById("dimacs").style.pointerEvents = "all";
-    document.getElementById("fontSizeSelector").style.pointerEvents = "all";
-    document.getElementById("pasteExampleSelector").style.pointerEvents = "all";
-    document.getElementById("strategiesResolution").style.pointerEvents = "all";
-    document.getElementById("openFile").style.pointerEvents = "all";
-
+    enablePointerEvents(true);
 });
+
+window.addEventListener("resize", function() {
+    const popup = document.getElementById("editing-buttons");
+    if (popup.classList.contains("show")) {
+        return;
+    }
+
+    if(window.innerWidth > 1050) {
+        enablePointerEvents(true);
+    } else {
+        enablePointerEvents(false);
+    }
+});
+
+if(window.innerWidth > 1050) {
+    enablePointerEvents(true);
+} else {
+    enablePointerEvents(false);
+}
 
 document.getElementById("closeMenuButton").addEventListener("click", function() {
     let popup = document.getElementById("editing-buttons");
     popup.classList.remove("show");
-    document.getElementById("help").style.pointerEvents = "none";
-    document.getElementById("dimacs").style.pointerEvents = "none";
-    document.getElementById("fontSizeSelector").style.pointerEvents = "none";
-    document.getElementById("pasteExampleSelector").style.pointerEvents = "none";
-    document.getElementById("strategiesResolution").style.pointerEvents = "none";
-    document.getElementById("openFile").style.pointerEvents = "none";
+    enablePointerEvents(false);
 });
 
-document.addEventListener("click", function(event) {
-    let popup = document.getElementById("editing-buttons");
-    if (!popup.contains(event.target) && event.target !== document.getElementById("menuButton")) {
-        popup.classList.add("hidden");
-        popup.classList.remove("show");
-        document.getElementById("help").style.pointerEvents = "none";
-        document.getElementById("dimacs").style.pointerEvents = "none";
-        document.getElementById("fontSizeSelector").style.pointerEvents = "none";
-        document.getElementById("pasteExampleSelector").style.pointerEvents = "none";
-        document.getElementById("strategiesResolution").style.pointerEvents = "none";
-        document.getElementById("openFile").style.pointerEvents = "none";
-    }
-
-});
+// document.addEventListener("click", function(event) {
+//     let popup = document.getElementById("editing-buttons");
+//     if (!popup.contains(event.target) && event.target !== document.getElementById("menuButton")) {
+//         popup.classList.add("hidden");
+//         popup.classList.remove("show");
+//         document.getElementById("help").style.pointerEvents = "none";
+//         document.getElementById("dimacs").style.pointerEvents = "none";
+//         document.getElementById("fontSizeSelector").style.pointerEvents = "none";
+//         document.getElementById("pasteExampleSelector").style.pointerEvents = "none";
+//         document.getElementById("strategiesResolution").style.pointerEvents = "none";
+//         document.getElementById("openFile").style.pointerEvents = "none";
+//     }
+// });
 
 document.getElementById('openFile').addEventListener('click', function() {
     document.getElementById('fileInput').click();
