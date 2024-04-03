@@ -964,6 +964,7 @@ document.getElementById('toggleVisibilityButton').addEventListener('click', func
 document.getElementById("menuButton").addEventListener("click", function() {
     document.getElementById("editing-buttons").style.display = "block";
     enablePointerEvents(true);
+    document.getElementById("editing-buttons").style.zIndex = "1000";
 });
 
 document.getElementById("menuButton").addEventListener("click", function() {
@@ -971,6 +972,7 @@ document.getElementById("menuButton").addEventListener("click", function() {
     popup.classList.remove("hidden");
     popup.classList.add("show");
     enablePointerEvents(true);
+    document.getElementById("editing-buttons").style.zIndex = "1000";
 });
 
 window.addEventListener("resize", function() {
@@ -981,21 +983,28 @@ window.addEventListener("resize", function() {
 
     if(window.innerWidth > 1050) {
         enablePointerEvents(true);
+        document.getElementById("editing-buttons").style.zIndex = "1000";
     } else {
         enablePointerEvents(false);
+        document.getElementById("editing-buttons").style.zIndex = "-1";
     }
 });
 
 if(window.innerWidth > 1050) {
     enablePointerEvents(true);
+    document.getElementById("editing-buttons").style.zIndex = "1000";
+
 } else {
     enablePointerEvents(false);
+    document.getElementById("editing-buttons").style.zIndex = "-1";
 }
 
 document.getElementById("closeMenuButton").addEventListener("click", function() {
     let popup = document.getElementById("editing-buttons");
     popup.classList.remove("show");
     enablePointerEvents(false);
+    document.getElementById("editing-buttons").style.zIndex = "-1";
+
 });
 
 // document.addEventListener("click", function(event) {
