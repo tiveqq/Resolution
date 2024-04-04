@@ -70,10 +70,18 @@ export default class PropositionalLogicVisitor extends antlr4.tree.ParseTreeVisi
 		else if (ctx.VARIABLE()) {
 			return Formula.getVariable(ctx.VARIABLE().getText());
 		}
+		else if (ctx.CONSTANT()) {
+			if (ctx.CONSTANT().getText() === '⊤') {
+				return Formula.trueConstant();
+			} else if (ctx.CONSTANT().getText() === '⊥') {
+				return Formula.falseConstant();
+			}
+		}
 		else {
 			return null;
 		}
 	}
+
 
 	visitSequent(ctx) {
 		const premises = this.visit(ctx.premiseList());

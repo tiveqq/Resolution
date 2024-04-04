@@ -379,12 +379,12 @@ function resolutionExplanation(clauses) {
             treeData = buildTreeDataCommon(result.steps);
         }
 
-
-        let tikzCode = buildTikzPicture(treeData);
-
-        buttonLaTeX.onclick = function() {
-            showModalWithText(tikzCode);
-        };
+        if(result.isProved) {
+            let tikzCode = buildTikzPicture(treeData);
+            buttonLaTeX.onclick = function() {
+                showModalWithText(tikzCode);
+            };
+        }
 
         if (treeData) {
             drawTree(treeData, "#tree-container");
