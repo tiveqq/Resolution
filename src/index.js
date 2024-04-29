@@ -242,9 +242,6 @@ function updateTableTreeFunctionality() {
     if (selectedMode === 'tree') {
         dynamicTree.style.display = 'flex';
         tableResolution.style.display = 'none';
-        if (stepNumber >= 1) {
-            buttonSVGDynamic.style.visibility = 'visible';
-        }
 
         if(stepNumber >= 1) {
             buttonLaTeXDynamic.style.visibility = 'visible';
@@ -257,7 +254,9 @@ function updateTableTreeFunctionality() {
     } else if (selectedMode === 'table') {
         dynamicTree.style.display = 'none';
         tableResolution.style.display = 'flex';
-        buttonLaTeXDynamic.style.visibility = 'visible';
+        if(stepNumber >= 1) {
+            buttonLaTeXDynamic.style.visibility = 'visible';
+        }
         buttonSVGDynamic.style.visibility = 'hidden';
     }
 
@@ -1267,6 +1266,20 @@ document.getElementById('toggleHistory').onclick = function() {
         historyDiv.style.right = '0px';
     }
 };
+
+document.addEventListener('click', function(event) {
+    const historyDiv = document.getElementById('history');
+    const toggleButton = document.getElementById('toggleHistory');
+
+    const isClickInsideHistoryDiv = historyDiv.contains(event.target);
+    const isClickOnToggleButton = toggleButton.contains(event.target);
+
+    if (!isClickInsideHistoryDiv && !isClickOnToggleButton && historyDiv.style.right === '0px') {
+        historyDiv.style.right = '-100%';
+    }
+});
+
+
 
 document.querySelectorAll('.keyboard-button').forEach(button => {
     button.addEventListener('click', function() {

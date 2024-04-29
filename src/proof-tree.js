@@ -328,7 +328,7 @@ function generateTikzCodeDynamic(node, indentLevel = 1, isRoot = false) {
 
     stringNode = stringNode
         .replace("□", "$\\square$")
-        .replace(/\{([^}]*)}/g, (match, p1) => `{$\\{${p1.replace("¬", "\\neg ")}\\}$}`)
+        .replace(/\{([^}]+)}/g, (match, p1) => `{$\\{${p1.replace(/¬/g, "\\neg ")}\\}$}`);
 
 
     if (!node.children || node.children.length === 0) {
