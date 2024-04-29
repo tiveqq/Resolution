@@ -57,7 +57,7 @@ body {
 }
 
 #myModalDIMACS {
-    max-width: 90%;
+    max-width: 100%;
     margin: auto;
 }
 
@@ -114,7 +114,6 @@ body {
     #pasteExampleSelectorStatic {
         width: 149px !important;
         margin: auto !important;
-
     }
 
     #helpStatic {
@@ -197,7 +196,6 @@ body {
     #openFile {
         margin: 0 0 10px 0 !important;
         pointer-events: none;
-
     }
 
     #dimacs {
@@ -276,6 +274,8 @@ body {
 
     #interactive-buttons {
         text-align: center;
+        margin-left: 18px;
+        margin-right: 18px;
     }
 
     #divider {
@@ -312,7 +312,8 @@ body {
 }
 
 #interactive-buttons {
-    display: block;
+    display: flex;
+    justify-content: space-between;
 }
 
 
@@ -622,6 +623,18 @@ select {
     width: 70%;
 }
 
+#first-table, #second-table, #possible-interactions, #latex-package {
+    color: #094e86;
+    font-weight: bold;
+    font-size: 20px;
+    border-radius: 3px;
+    margin-bottom: 15px;
+}
+
+#second-table, #latex-package {
+    margin-top: 15px;
+}
+
 .help-section {
     color: #062f50;
 }
@@ -736,6 +749,15 @@ select {
     height: 30px;
 }
 
+.clause-card:hover {
+    background-color: rgba(213, 213, 213, 0.38);
+    cursor: pointer;
+}
+
+.clause-card:active {
+    background-color: rgba(128, 127, 127, 0.38);
+}
+
 
 
 #resolution-result {
@@ -831,12 +853,34 @@ select {
     transition: background-color 0.1s ease;
 }
 
+#undo {
+    width:110px;
+    display: flex;
+    justify-content: center;
+    font-size: 15px;
+}
+
+#redo {
+    display: flex;
+    width:110px;
+
+    justify-content: center;
+    font-size: 15px;
+}
+
+#toggleHistory {
+    width: 150px;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
 #toggleHistory:hover, #undo:hover, #redo:hover, #download-btn-dynamic:hover {
     background-color: #073c68;
 }
 
-#download-latex-button {
-    /*width: 13px;*/
+#download-latex-button, #download-latex-button-dynamic {
     width: 162px;
 }
 
@@ -846,12 +890,29 @@ select {
     box-shadow: 0 0 0 4px #b5c9fc;
 }
 
+#resolution-container {
+    transition: all 0.3s ease-in-out;
+}
+
+#toggleResolutionButton {
+    width: 40px;
+    margin-bottom: 13px;
+    background-color: #f5f5f5;
+    border: none;
+}
+
+#collapseSteps {
+    display: flex;
+}
+
+
 .toggle-container div {
     display: flex;
     margin-bottom: 1.2rem;
     justify-content: left;
     margin-left: 25px;
     font-weight: bold;
+    margin-top: -9px;
 }
 
 #toggle-tree {
@@ -885,25 +946,25 @@ select {
 
 
 
-#download-btn, #latex-tree-generate {
+#download-btn, #latex-tree-generate, #latex-tree-generate-dynamic, #download-btn-dynamic-svg {
     width: 1px;
-    background-color: white;
+    background-color: transparent;
     border: none;
     cursor: pointer;
 }
 
-#download-btn svg, #latex-tree-generate svg {
+#download-btn svg, #latex-tree-generate svg, #latex-tree-generate-dynamic svg, #download-btn-dynamic-svg svg {
     width: 50px;
     height: 40px;
     margin-top: 3px;
     margin-bottom: -25px;
 }
 
-#download-btn:hover path {
+#download-btn:hover path, #download-btn-dynamic-svg:hover path {
     fill: #073c68;
 }
 
-#latex-tree-generate:hover path {
+#latex-tree-generate:hover path, #latex-tree-generate-dynamic:hover path {
     fill: #073c68;
 
 }
@@ -922,12 +983,12 @@ select {
     transition: background-color 0.1s ease;
 }
 
-#download-btn, #latex-tree-generate {
+#download-btn, #latex-tree-generate, #latex-tree-generate-dynamic, #download-btn-dynamic-svg {
     margin: auto 130px 15px auto;
 }
 
 
-#download-svg-button {
+#download-svg-button, #download-svg-button-dynamic {
     display: flex;
     justify-content: flex-end;
     margin-inline-start: -67px;
@@ -940,6 +1001,11 @@ select {
 
 #applyResolutionButton:hover {
     background-color: #073c68;
+}
+
+#applyResolutionButton:disabled {
+    background-color: rgba(9, 78, 134, 0.4);
+    cursor: not-allowed;
 }
 
 #resolveButtonLogical:disabled {
@@ -1107,10 +1173,26 @@ select {
 
 }
 
-#help svg, #helpStatic svg, #closeMenuButton svg {
+#help svg, #helpStatic svg, #closeMenuButton svg{
     width: 25px;
     height: 15px;
     margin-left: 6px;
+}
+
+#arrow-undo {
+    width: 18px;
+    margin-right:23px;
+}
+
+#history-svg {
+    width: 18px;
+    margin-left:23px;
+}
+
+#arrow-redo {
+    width: 18px;
+    margin-left:23px;
+    transform: scaleX(-1);
 }
 
 .modal {
@@ -1137,10 +1219,14 @@ select {
     border-radius: 8px;
 }
 
-#download-buttons {
+#download-buttons, #download-buttons-dynamic{
     display: inline-flex;
     /*gap: 45px;*/
     width:50%
+}
+
+#download-buttons-dynamic {
+    margin-top: 15px;
 }
 
 .close {
@@ -1276,12 +1362,12 @@ select {
     margin-left: 10px;
 }
 
-#c1 {
+#c1, #c2 {
     opacity: 0;
     position: absolute;
 }
 
-#c1 + label {
+#c1 + label, #c2 + label {
     position: relative;
     padding-left: 25px;
     cursor: pointer;
@@ -1295,7 +1381,11 @@ select {
 
 }
 
-#c1 + label:before {
+#c2 + label {
+    margin: 26px 10px 1px;
+}
+
+#c1 + label:before, #c2 + label:before {
     content: '';
     position: absolute;
     left: 0;
@@ -1309,7 +1399,7 @@ select {
 
 }
 
-#c1 + label::after {
+#c1 + label::after, #c2 + label::after {
     content: '';
     position: absolute;
     left: 5px;
@@ -1321,19 +1411,19 @@ select {
     transition: background-color 0.3s;
 }
 
-#c1:checked + label::after {
+#c1:checked + label::after, #c2:checked + label::after{
     background-color: #094e86;
 }
 
-#c1:focus + label::after {
+#c1:focus + label::after, #c2:focus + label::after {
     box-shadow: 0 0 0 3px rgba(9, 78, 134, 0.5);
 }
 
-#c1:disabled + label {
+#c1:disabled + label, #c2:disabled + label {
     color: #aaa;
 }
 
-#c1:disabled + label:before {
+#c1:disabled + label:before, #c2:disabled + label:before {
     border-color: #aaa;
 }
 
@@ -1348,7 +1438,7 @@ select {
     margin-left: 10px;
 }
 
-select#pasteExampleSelector, select#strategiesResolution, select#pasteExampleSelectorStatic, select#strategiesResolutionStatic {
+select#pasteExampleSelector, select#strategiesResolution, select#pasteExampleSelectorStatic, select#strategiesResolutionStatic, select#strategiesResolution, select#changeLanguage {
     width: 220px;
     padding: 10px;
     border: 2px solid #094e86;
@@ -1358,6 +1448,10 @@ select#pasteExampleSelector, select#strategiesResolution, select#pasteExampleSel
     cursor: pointer;
     outline: none;
     margin: 10px 0 10px 24px;
+}
+
+select#changeLanguage {
+    width: 65px;
 }
 
 
@@ -1373,17 +1467,17 @@ select#fontSizeSelector, select#fontSizeSelectorStatic {
     margin: 10px 0 10px 24px;
 }
 
-select#fontSizeSelector option, select#pasteExampleSelector option, select#strategiesResolution option, select#fontSizeSelectorStatic, select#pasteExampleSelectorStatic, select#strategiesResolutionStatic  {
+select#fontSizeSelector option, select#pasteExampleSelector option, select#strategiesResolution option, select#fontSizeSelectorStatic, select#pasteExampleSelectorStatic, select#strategiesResolutionStatic, select#changeLanguage option  {
     padding: 5px;
     background-color: #f7f7f7;
     color: #094e86;
 }
 
-select#fontSizeSelector:hover, select#strategiesResolution:hover, select#pasteExampleSelector:hover, select#fontSizeSelectorStatic:hover, select#pasteExampleSelectorStatic:hover, select#strategiesResolutionStatic:hover {
+select#fontSizeSelector:hover, select#strategiesResolution:hover, select#pasteExampleSelector:hover, select#fontSizeSelectorStatic:hover, select#pasteExampleSelectorStatic:hover, select#strategiesResolutionStatic:hover, select#changeLanguage:hover {
     background-color: #e1efff;
 }
 
-select#fontSizeSelector:focus, select#strategiesResolution:focus, select#fontSizeSelectorStatic:focus, select#pasteExampleSelectorStatic:focus, select#strategiesResolutionStatic:focus {
+select#fontSizeSelector:focus, select#strategiesResolution:focus, select#fontSizeSelectorStatic:focus, select#pasteExampleSelectorStatic:focus, select#strategiesResolutionStatic:focus, select#changeLanguage:focus {
     border-color: #073c64;
 }
 

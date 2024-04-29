@@ -236,7 +236,7 @@ function generateTikzCode(node, indentLevel = 1, isRoot = false) {
 
     let nodeName = node.name
         .replace("□", "$\\square$")
-        .replace(/\{([^}]*)}/g, (match, p1) => `{$\\{${p1.replace("¬", "\\neg ")}\\}$}`);
+        .replace(/\{([^}]+)}/g, (match, p1) => `{$\\{${p1.replace(/¬/g, "\\neg ")}\\}$}`);
 
 
     if (!node.children || node.children.length === 0) {
@@ -255,6 +255,98 @@ export function buildTikzPicture(treeData) {
     let tikzStr = "\\begin{tikzpicture}\n";
 
     tikzStr += generateTikzCode(treeData,1,true);
+
+    tikzStr += "\\end{tikzpicture}";
+
+    return tikzStr;
+}
+
+function convertNodeNameToString(node) {
+    if (Array.isArray(node.name)) {
+        return node.name.join(", ");
+    } else if (typeof node.name === 'string') {
+        return node.name;
+    } else {
+        return "";
+    }
+}
+
+export function replaceGreekSymbolsWithLatex(stringNode) {
+    const greekSymbols = {
+        "α": "\\alpha",
+        "β": "\\beta",
+        "γ": "\\gamma",
+        "δ": "\\delta",
+        "ε": "\\epsilon",
+        "ζ": "\\zeta",
+        "η": "\\eta",
+        "θ": "\\theta",
+        "ι": "\\iota",
+        "κ": "\\kappa",
+        "λ": "\\lambda",
+        "μ": "\\mu",
+        "ξ": "\\xi",
+        "ο": "\\omicron",
+        "π": "\\pi",
+        "ρ": "\\rho",
+        "σ": "\\sigma",
+        "τ": "\\tau",
+        "υ": "\\upsilon",
+        "φ": "\\phi",
+        "χ": "\\chi",
+        "ψ": "\\psi",
+        "ω": "\\omega",
+        "⊥": "{\\bot}"
+    };
+
+    const regex = new RegExp(`(${Object.keys(greekSymbols).join("|")})`, "g");
+    return stringNode.replace(regex, (match) => greekSymbols[match]);
+}
+
+let ifRoot = true;
+
+export function setIfRoot(value) {
+    ifRoot = value;
+}
+
+function generateTikzCodeDynamic(node, indentLevel = 1, isRoot = false) {
+    let childIndent = "\t".repeat(indentLevel + 1);
+
+    let stringNode = convertNodeNameToString(node);
+
+    if(stringNode !== "□" && ifRoot) {
+        ifRoot = false;
+        stringNode = "{" + stringNode + "}";
+    }
+
+    if(stringNode === "□") {
+        ifRoot = false;
+    }
+
+    stringNode = replaceGreekSymbolsWithLatex(stringNode);
+
+
+    stringNode = stringNode
+        .replace("□", "$\\square$")
+        .replace(/\{([^}]*)}/g, (match, p1) => `{$\\{${p1.replace("¬", "\\neg ")}\\}$}`)
+
+
+    if (!node.children || node.children.length === 0) {
+        return `${isRoot ? '\\node' : 'node'} {${stringNode}}`;
+    }
+
+    let childrenStr = node.children.map((child, index) => {
+        let suffix = (isRoot && index === node.children.length - 1) ? ';' : '';
+        return `${childIndent}child {${generateTikzCodeDynamic(child, indentLevel + 2)} edge from parent}${suffix}\n`;
+    }).join('');
+
+    return `${isRoot ? '\\node' : 'node'} {${stringNode}} [grow=up]\n${childrenStr}`;
+}
+
+export function buildTikzPictureDynamic(treeData) {
+    let tikzStr = "\\begin{tikzpicture}\n";
+
+    tikzStr += generateTikzCodeDynamic(treeData,1,true);
 
     tikzStr += "\\end{tikzpicture}";
 

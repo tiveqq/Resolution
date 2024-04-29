@@ -1,5 +1,26 @@
-import {clearTree} from "./proof-tree";
-import {steps} from "./index"
+import {clearTree, replaceGreekSymbolsWithLatex} from "./proof-tree";
+import {steps, applyResolution,} from "./index"
+
+
+let whichSelectToPaste = 1;
+
+const checkIfButtonNeeded = document.getElementById('c2');
+const buttonForApplyingResolutionRule = document.getElementById("applyResolutionButton");
+let ifButtonNeeded = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    ifButtonNeeded = checkIfButtonNeeded.checked;
+
+    checkIfButtonNeeded.addEventListener('change', function() {
+        ifButtonNeeded = checkIfButtonNeeded.checked;
+        buttonForApplyingResolutionRule.disabled = ifButtonNeeded;
+    });
+});
+
+export function setWhichSelectToPaste(value) {
+    whichSelectToPaste = value;
+}
 
 export function initControlButtons(editor) {
     let isResizing = false;
@@ -144,7 +165,7 @@ export function createResolutionStep(step, stepNumber) {
     return stepDiv;
 }
 
-export function divsOfExplanation() {
+export function returnDivsWithExplanation() {
     const CNFMessage = document.getElementById('cnf-formula');
     const clausesMessage = document.getElementById('clauses');
     const negationFormula = document.getElementById('negation-formula');
@@ -163,6 +184,53 @@ export function divsOfExplanation() {
     const resultInterpretation = document.getElementById('result-interpretation')
     const stepsExplanation = document.getElementById('steps-explanation');
     const dotLines = document.getElementsByClassName('dotted-line-background');
+    const buttonLaTeXDynamic = document.getElementById("latex-tree-generate-dynamic");
+    const buttonSVGDynamic = document.getElementById("download-btn-dynamic-svg");
+    return {
+        CNFMessage,
+        clausesMessage,
+        negationFormula,
+        resolutionContainer,
+        resolutionResultElement,
+        stepByStepResolution,
+        clause1Select,
+        clause2Select,
+        historyElement,
+        negatedFormula,
+        cnfResult,
+        clausesResult,
+        descFormula,
+        descCNF,
+        descClauses,
+        resultInterpretation,
+        stepsExplanation,
+        dotLines, buttonLaTeXDynamic, buttonSVGDynamic
+    };
+}
+
+export function divsOfExplanation() {
+    const {
+        CNFMessage,
+        clausesMessage,
+        negationFormula,
+        resolutionContainer,
+        resolutionResultElement,
+        stepByStepResolution,
+        clause1Select,
+        clause2Select,
+        historyElement,
+        negatedFormula,
+        cnfResult,
+        clausesResult,
+        descFormula,
+        descCNF,
+        descClauses,
+        resultInterpretation,
+        stepsExplanation,
+        dotLines,
+        buttonLaTeXDynamic,
+        buttonSVGDynamic
+    } = returnDivsWithExplanation();
 
     historyElement.innerHTML = '';
     clearTree("#tree-container");
@@ -190,9 +258,13 @@ export function divsOfExplanation() {
     clause1Select.innerHTML = '';
     clause2Select.innerHTML = '';
 
+    //buttonLaTeXDynamic.style.display = 'none';
+    // buttonSVGDynamic.style.display = 'none';
+
     return {CNFMessage, clausesMessage, negationFormula, resolutionContainer, resolutionResultElement,
         stepByStepResolution, clause1Select, clause2Select, historyElement, negatedFormula, cnfResult,
-        clausesResult, descClauses, descFormula, descCNF, resultInterpretation, stepsExplanation, dotLines};
+        clausesResult, descClauses, descFormula, descCNF, resultInterpretation, stepsExplanation, dotLines,
+        buttonLaTeXDynamic, buttonSVGDynamic};
 }
 
 export function clearTableResolutionInterpretation() {
@@ -253,6 +325,55 @@ export function updateCurrentClausesDisplay(clauses) {
         const clauseCard = document.createElement('div');
         clauseCard.className = 'clause-card';
         clauseCard.textContent = convertInteractiveActualClausesToLatex(clause);
+
+        clauseCard.addEventListener('click', () => {
+            let select1;
+            if(whichSelectToPaste === 1) {
+                select1 = document.getElementById('clause1');
+                select1.focus();
+
+            } else if(whichSelectToPaste === 2) {
+                select1 = document.getElementById('clause2');
+                select1.focus();
+
+            }
+            let filteredClause = convertInteractiveActualClausesToLatex(clause);
+            filteredClause = filteredClause.replace(/[()\s\\]/g, '');
+
+
+            for (let i = 0; i < select1.options.length; i++) {
+                if (select1.options[i].value === clause) {
+                    select1.slectedIndex = i;
+                    break;
+                }
+            }
+
+            let optionFound = false;
+            for (let i = 0; i < select1.options.length; i++) {
+                if (select1.options[i].text === filteredClause) {
+                    select1.selectedIndex = i;
+                    optionFound = true;
+                    break;
+                }
+            }
+
+            if(whichSelectToPaste === 1) {
+                whichSelectToPaste++;
+            } else if(whichSelectToPaste === 2) {
+                whichSelectToPaste--;
+                if(ifButtonNeeded) {
+                    applyResolution();
+                }
+
+            }
+
+            if (!optionFound) {
+                let newOption = new Option(filteredClause, clause.index);
+                select1.add(newOption);
+                select1.selectedIndex = select1.options.length - 1;
+            }
+        });
+
         currentClausesElement.appendChild(clauseCard);
     });
     MathJax.typesetPromise();
@@ -284,12 +405,42 @@ function formatClause(clauseArray) {
     }
 }
 
+export function generateLatexTable(table) {
+    let latexCode = "\\begin{tabular}{|c|c|c|}\n";
+
+    latexCode += "\\hline\n";
+
+
+    const tableBody = table.querySelector('tbody');
+    const rows = tableBody.querySelectorAll('tr');
+
+    rows.forEach((row) => {
+        const cells = row.querySelectorAll('td');
+        const stepNumber = cells[0].textContent;
+        let clause = cells[1].textContent;
+        const source = cells[2].textContent;
+
+        clause = replaceGreekSymbolsWithLatex(clause);
+        clause = clause.replace(/\{([^}]*)}/g, (match, p1) => `{$\\{${p1.replace("¬", "\\neg ")}\\}$}`);
+
+        latexCode += `\t${stepNumber} & ${clause} & ${source} \\\\\n`;
+
+        latexCode += "\\hline\n";
+
+    });
+
+    latexCode += "\\end{tabular}\n";
+    return latexCode;
+}
+
+
 export function updateResolutionTable(initialClauses) {
     const tableContainer = document.getElementById("table-resolution-interpretation");
     tableContainer.innerHTML = "";
 
     const table = document.createElement("table");
     table.classList.add("resolution-table");
+    table.id = 'resolution-table-interpretation'
     const thead = document.createElement("thead");
     const tbody = document.createElement("tbody");
     const headerRow = document.createElement("tr");
