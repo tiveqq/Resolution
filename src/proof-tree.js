@@ -18,6 +18,7 @@ export function buildTreeDataCommon(steps) {
         const currentStep = steps.find(step => (Array.isArray(step.result) ? step.result.join(', ') : step.result) === node.name.replace(/[{}]/g, ''));
 
         if (currentStep) {
+
             currentStep.resolved.forEach(resolved => {
                 const childNode = {
                     name: `{${resolved.join(', ')}}`,

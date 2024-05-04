@@ -127,9 +127,9 @@
                         </tr>
                     </table>
                     <div id="latex-package" data-translate="latex-package">LaTeX</div>
-                    <p id="balik" data-translate="balik">Ak chcete vytvoriť strom v LaTeXe, musíte použiť balík:</p>
+                    <p id="balik" data-translate="balik">Ak chcete vytvoriť strom v LaTeXe, musíte použiť balíky:</p>
                     <p style="color: #094e86">    \usepackage{tikz}</p>
-
+                    <p style="color: #094e86">    \usepackage{amssymb}</p>
 
                 </div>
 
@@ -411,7 +411,23 @@
 
     <div id="myModalDIMACS" class="modal">
         <div class="modal-content">
+            <div id="closeAndLaTeX">
+            <div id="bar-options-latex" style="display: none">
+                <div class="toggle-container-latex">
+                    <div id="latex">
+                        <label>
+                            <input type="radio" id="tree-option-latex" name="mode" value="tree" checked="">
+                            <span data-translate="toggle-tree" id="toggle-tree-latex">Strom</span>
+                        </label>
+                        <label>
+                            <input type="radio" id="latex-option" name="mode" value="table">
+                            <span data-translate="toggle-table" id="toggle-latex">Kompletný LaTeX</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
             <span class="close" id="closeDimacs">&times;</span>
+            </div>
             <pre id="modalText"></pre>
             <button id="copyButton" title="Skopírovať do schránky">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z" stroke="#094e86" stroke-width="1.5"></path> <path d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5" stroke="#094e86" stroke-width="1.5"></path> </g></svg>
@@ -419,7 +435,6 @@
             </button>
         </div>
     </div>
-
 
         <div id="error-message"></div>
 
@@ -445,16 +460,14 @@
         <div id="resolution-result"></div>
         <div id="cut-button">
             <div class="dotted-line-background" style="visibility: hidden">&nbsp;</div>
-            <button data-translate="toggleVisibilityButton" id="toggleVisibilityButton">Zobraziť kroky</button>
+            <button data-translate="toggleVisibilityButton" id="toggleVisibilityButton">Zobraziť strom</button>
             <div class="dotted-line-background" style="visibility: hidden">&nbsp;</div>
         </div>
 
         <div id="collapseSteps" style="display: none">
             <div class="line-cut"></div>
             <button id="toggleResolutionButton">
-                <svg id='collapseButton' class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="#094e86" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
-                </svg>
+                Zobraziť kroky
             </button>
             <div class="line-cut"></div>
 
@@ -485,7 +498,7 @@
             <button id="undo">
                 <svg id="arrow-undo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M11.2945 18.9112C11.7216 18.7306 12 18.3052 12 17.8333V15H19C19.5523 15 20 14.5523 20 14V10C20 9.44772 19.5523 9 19 9H12V6.1667C12 5.69483 11.7216 5.26942 11.2945 5.08884C10.8674 4.90826 10.3759 5.00808 10.049 5.34174L4.33474 11.175C3.88842 11.6307 3.88842 12.3693 4.33474 12.825L10.049 18.6583C10.3759 18.9919 10.8674 19.0917 11.2945 18.9112Z" fill="#ffffff"></path> </g></svg>
 
-                Undo
+                <span data-translate="undoText" id="undoText">Späť</span>
             </button>
             <button data-translate="toggleHistory" id="toggleHistory">
                 <span id="text-history" data-translate="text-history">História</span>
@@ -494,10 +507,9 @@
                      fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs id="defs4"></defs> <:namedview id="base" pagecolor="#ffffff" bordercolor="#ffffff" borderopacity="1.0" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:zoom="1.4" inkscape:cx="-243.56411" inkscape:cy="166.49755" inkscape:document-units="px" inkscape:current-layer="layer1" showgrid="false" units="px" showguides="true" inkscape:guide-bbox="true" inkscape:window-width="1863" inkscape:window-height="1056" inkscape:window-x="1977" inkscape:window-y="24" inkscape:window-maximized="1"> </:namedview> <metadata id="metadata7"> <:rdf> <:work rdf:about=""> <:format>image/svg+xml</:format> <:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></:type> <:title></:title> </:work> </:rdf> </metadata> <g :label="Capa 1" :groupmode="layer" id="layer1" transform="translate(0,-652.36216)"> <g style="display:inline;fill:#ffffff" id="g7217" transform="matrix(16.064569,0,0,15.272525,-11185.705,-3045.6007)"> <rect style="color:#ffffff;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#ffffff;solid-opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" id="rect7203" width="24.899517" height="1.5048113" x="696.29663" y="266.65637"></rect> <rect y="254.47473" x="696.29663" height="1.5048113" width="24.899517" id="rect7205" style="color:#ffffff;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#ffffff;solid-opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"></rect> <rect style="color:#ffffff;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#ffffff;solid-opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" id="rect7207" width="24.899517" height="1.5048113" x="696.29663" y="248.38391"></rect> <rect y="242.29309" x="696.29663" height="1.5048113" width="24.899517" id="rect7209" style="color:#ffffff;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#ffffff;solid-opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"></rect> <rect y="260.56555" x="696.29663" height="1.5048113" width="24.899517" id="rect7215" style="color:#ffffff;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#ffffff;solid-opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"></rect> </g> </g> </g></svg>
             </button>
             <button id="redo">
-                Redo
+                <span data-translate="redoText" id="redoText">Vpred</span>
 
                 <svg id="arrow-redo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M11.2945 18.9112C11.7216 18.7306 12 18.3052 12 17.8333V15H19C19.5523 15 20 14.5523 20 14V10C20 9.44772 19.5523 9 19 9H12V6.1667C12 5.69483 11.7216 5.26942 11.2945 5.08884C10.8674 4.90826 10.3759 5.00808 10.049 5.34174L4.33474 11.175C3.88842 11.6307 3.88842 12.3693 4.33474 12.825L10.049 18.6583C10.3759 18.9919 10.8674 19.0917 11.2945 18.9112Z" fill="#ffffff"></path> </g></svg>
-<!--            <button data-translate="download-btn-dynamic" id="download-btn-dynamic">Stiahnuť SVG</button>-->
             </button>
         </div>
 

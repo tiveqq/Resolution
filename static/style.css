@@ -599,6 +599,8 @@ select {
     fill: #e1efff;
 }
 
+
+
 .close:hover {
     cursor: pointer;
 }
@@ -895,10 +897,22 @@ select {
 }
 
 #toggleResolutionButton {
-    width: 40px;
+    width: 90px;
     margin-bottom: 13px;
     background-color: #f5f5f5;
     border: none;
+    color: #094e86;
+}
+
+#toggleResolutionButton:hover {
+    background-color: #e5e5e5;
+    cursor: pointer;
+}
+
+#visualization-result {
+    margin-top: 7px;
+    font-size: 26px;
+    margin-bottom: 7px;
 }
 
 #collapseSteps {
@@ -906,7 +920,7 @@ select {
 }
 
 
-.toggle-container div {
+.toggle-container div, .toggle-container-latex div {
     display: flex;
     margin-bottom: 1.2rem;
     justify-content: left;
@@ -915,19 +929,28 @@ select {
     margin-top: -9px;
 }
 
-#toggle-tree {
+#toggle-tree, #toggle-tree-latex {
     width: 74px;
 }
 
-#toggle-table {
+#toggle-table{
     width: 74px;
 }
 
-#bar-options {
+#toggle-latex {
+    width: 160px;
+}
+
+#bar-options, #bar-options-latex {
     display: flex;
     justify-content: center;
     margin-right: 20px;
     margin-top: 10px;
+}
+
+#closeAndLaTeX {
+    display: flex;
+    justify-content: space-between;
 }
 
 .toggle-container input[type="radio"] {
@@ -944,7 +967,19 @@ select {
     color: #094e86;
 }
 
+.toggle-container-latex input[type="radio"] {
+    clip: rect(0 0 0 0);
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+}
 
+.toggle-container-latex input[type="radio"]:checked + span {
+    box-shadow: 0 0 0 0.0625em #094e86;
+    background-color: #dee7ff;
+    z-index: 1;
+    color: #094e86;
+}
 
 #download-btn, #latex-tree-generate, #latex-tree-generate-dynamic, #download-btn-dynamic-svg {
     width: 1px;
@@ -1140,13 +1175,13 @@ select {
     box-shadow: 0 0 0 4px #b5c9fc;
 }
 
-.toggle-container div {
+.toggle-container div, .toggle-container-latex div {
     display: flex;
     margin-bottom: 1.2rem;
     font-weight: bold;
 }
 
-.toggle-container {
+.toggle-container, .toggle-container-latex {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1158,6 +1193,14 @@ select {
 }
 
 .toggle-container input[type="radio"] {
+    clip: rect(0 0 0 0);
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+}
+
+
+.toggle-container-latex input[type="radio"] {
     clip: rect(0 0 0 0);
     clip-path: inset(100%);
     height: 1px;
@@ -1483,6 +1526,13 @@ select#fontSizeSelector:focus, select#strategiesResolution:focus, select#fontSiz
 
 
 .toggle-container input[type="radio"]:checked + span {
+    box-shadow: 0 0 0 0.0625em #094e86;
+    background-color: #dee7ff;
+    z-index: 1;
+    color: #094e86;
+}
+
+.toggle-container-latex input[type="radio"]:checked + span {
     box-shadow: 0 0 0 0.0625em #094e86;
     background-color: #dee7ff;
     z-index: 1;

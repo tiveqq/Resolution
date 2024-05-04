@@ -1,5 +1,5 @@
 import {clearTree, replaceGreekSymbolsWithLatex} from "./proof-tree";
-import {steps, applyResolution,} from "./index"
+import {steps, applyResolution, isVisibility} from "./index"
 
 
 let whichSelectToPaste = 1;
@@ -186,6 +186,7 @@ export function returnDivsWithExplanation() {
     const dotLines = document.getElementsByClassName('dotted-line-background');
     const buttonLaTeXDynamic = document.getElementById("latex-tree-generate-dynamic");
     const buttonSVGDynamic = document.getElementById("download-btn-dynamic-svg");
+    const visualizationResult = document.getElementById('visualization-result');
     return {
         CNFMessage,
         clausesMessage,
@@ -204,7 +205,7 @@ export function returnDivsWithExplanation() {
         descClauses,
         resultInterpretation,
         stepsExplanation,
-        dotLines, buttonLaTeXDynamic, buttonSVGDynamic
+        dotLines, buttonLaTeXDynamic, buttonSVGDynamic, visualizationResult
     };
 }
 
@@ -229,7 +230,8 @@ export function divsOfExplanation() {
         stepsExplanation,
         dotLines,
         buttonLaTeXDynamic,
-        buttonSVGDynamic
+        buttonSVGDynamic,
+        visualizationResult
     } = returnDivsWithExplanation();
 
     historyElement.innerHTML = '';
@@ -247,8 +249,12 @@ export function divsOfExplanation() {
     negatedFormula.innerHTML = '';
     descFormula.innerHTML = '';
     descClauses.innerHTML = '';
-    dotLines[0].style.visibility = 'hidden';
-    dotLines[1].style.visibility = 'hidden';
+    if(!isVisibility) {
+        dotLines[0].style.visibility = 'hidden';
+        dotLines[1].style.visibility = 'hidden';
+    }
+
+    visualizationResult.innerHTML = '';
 
     descCNF.innerHTML = '';
     resultInterpretation.style.visibility = 'hidden';
@@ -257,6 +263,7 @@ export function divsOfExplanation() {
     stepByStepResolution.style.display = 'none';
     clause1Select.innerHTML = '';
     clause2Select.innerHTML = '';
+
 
     //buttonLaTeXDynamic.style.display = 'none';
     // buttonSVGDynamic.style.display = 'none';
@@ -277,6 +284,13 @@ export function convertInteractiveActualClausesToLatex(clauses) {
         return "\\(\\bot\\)";
     }
     return "{\\(" + clauses.join(', ') + "\\)}";
+}
+
+export function convertInteractiveSelectClausesToLatex(clauses) {
+    if (clauses.length === 0) {
+        return "⊥";
+    }
+    return "{" + clauses.join(', ') + "}";
 }
 
 export function convertActualClausesToLatex(clauses) {
@@ -300,8 +314,12 @@ export function updateClauseSelections(clauses) {
     const select1 = document.getElementById('clause1');
     const select2 = document.getElementById('clause2');
 
+    const value1 = select1.value;
+    const value2 = select2.value;
+
     select1.innerHTML = '';
     select2.innerHTML = '';
+
 
     clauses.forEach((clause, index) => {
         let option1 = new Option(convertInteractiveActualClausesToLatex(clause), index);
@@ -309,6 +327,9 @@ export function updateClauseSelections(clauses) {
         select1.add(option1);
         select2.add(option2);
     });
+
+    select1.selectedIndex = value1;
+    select2.selectedIndex = value2;
 
     MathJax.typesetPromise();
 }
@@ -324,7 +345,7 @@ export function updateCurrentClausesDisplay(clauses) {
     clauses.forEach(clause => {
         const clauseCard = document.createElement('div');
         clauseCard.className = 'clause-card';
-        clauseCard.textContent = convertInteractiveActualClausesToLatex(clause);
+        clauseCard.textContent = convertInteractiveSelectClausesToLatex(clause);
 
         clauseCard.addEventListener('click', () => {
             let select1;
@@ -376,7 +397,7 @@ export function updateCurrentClausesDisplay(clauses) {
 
         currentClausesElement.appendChild(clauseCard);
     });
-    MathJax.typesetPromise();
+    // MathJax.typesetPromise();
 }
 
 export function convertFormulasToLatex(expression) {
@@ -421,12 +442,11 @@ export function generateLatexTable(table) {
         const source = cells[2].textContent;
 
         clause = replaceGreekSymbolsWithLatex(clause);
-        clause = clause.replace(/\{([^}]*)}/g, (match, p1) => `{$\\{${p1.replace("¬", "\\neg ")}\\}$}`);
+        clause = clause.replace(/\{([^}]+)}/g, (match, p1) =>  `{$\\{${p1.replace(/¬/g, "\\neg ")}\\}$}`);
 
         latexCode += `\t${stepNumber} & ${clause} & ${source} \\\\\n`;
 
         latexCode += "\\hline\n";
-
     });
 
     latexCode += "\\end{tabular}\n";
@@ -449,14 +469,57 @@ export function updateResolutionTable(initialClauses) {
     table.appendChild(thead);
     table.appendChild(tbody);
 
+    function addClickListener(row, clauseArray) {
+        row.addEventListener('click', () => {
+            let select1;
+            if (whichSelectToPaste === 1) {
+                select1 = document.getElementById('clause1');
+                select1.focus();
+            } else if (whichSelectToPaste === 2) {
+                select1 = document.getElementById('clause2');
+                select1.focus();
+            }
+
+            let filteredClause = convertInteractiveActualClausesToLatex(clauseArray);
+            filteredClause = filteredClause.replace(/[()\s\\]/g, '');
+
+            for (let i = 0; i < select1.options.length; i++) {
+                if (select1.options[i].value === clauseArray) {
+                    select1.selectedIndex = i;
+                    break;
+                }
+            }
+
+            let optionFound = false;
+            for (let i = 0; i < select1.options.length; i++) {
+                if (select1.options[i].text === filteredClause) {
+                    select1.selectedIndex = i;
+                    optionFound = true;
+                    break;
+                }
+            }
+
+            if (whichSelectToPaste === 1) {
+                whichSelectToPaste++;
+            } else if (whichSelectToPaste === 2) {
+                whichSelectToPaste--;
+                if (ifButtonNeeded) {
+                    applyResolution();
+                }
+            }
+        });
+    }
+
+
     initialClauses.forEach((clauseArray, index) => {
         const row = document.createElement("tr");
         addCell(row, index + 1);
         addCell(row, `{${clauseArray.join(', ')}}`);
         addCell(row, "-");
         tbody.appendChild(row);
-    });
+        addClickListener(row, clauseArray);
 
+    });
     steps.forEach((step, index) => {
         const row = document.createElement("tr");
         const stepNumber = initialClauses.length + index + 1;
@@ -472,6 +535,9 @@ export function updateResolutionTable(initialClauses) {
         addCell(row, source);
 
         tbody.appendChild(row);
+
+        addClickListener(row, step.result);
+
     });
 
     tableContainer.appendChild(table);

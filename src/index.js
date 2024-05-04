@@ -87,9 +87,9 @@ changeLanguageSelect.addEventListener('change', function() {
         }
         translateExplanation();
         if (resolutionContainer.style.display === "none") {
-            button.textContent = "Zobraziť kroky";
+            button.textContent = "Zobraziť strom";
         } else {
-            button.textContent = "Skryť kroky";
+            button.textContent = "Skryť strom";
         }
     }
 });
@@ -235,7 +235,8 @@ function parseAndVisit(input, lineNumberOffset) {
 }
 
 function updateTableTreeFunctionality() {
-    const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+    const barOptions = document.getElementById('bar-options');
+    const selectedMode = barOptions.querySelector('input[name="mode"]:checked').value;
     const dynamicTree = document.querySelector('.Dynamic-Tree');
     const tableResolution = document.getElementById('table-resolution-interpretation');
 
@@ -246,7 +247,6 @@ function updateTableTreeFunctionality() {
         if(stepNumber >= 1) {
             buttonLaTeXDynamic.style.visibility = 'visible';
             buttonSVGDynamic.style.visibility = 'visible';
-
         } else {
             buttonLaTeXDynamic.style.visibility = 'hidden';
             buttonSVGDynamic.style.visibility = 'hidden';
@@ -320,7 +320,6 @@ export function applyResolution() {
             }
         }
 
-
         addUniqueResult(clausesForEach, result)
         updateClauseSelections(clausesForEach);
         updateCurrentClausesDisplay(clausesForEach);
@@ -338,26 +337,23 @@ export function applyResolution() {
 
         if (Array.isArray(result)) {
             document.getElementById('visualization-result').innerHTML =
-                step.result.length > 0 ? `$$\\Large{${result.join(' \\vee ')}}$$` : '$$\\bot$$';
+                step.result.length > 0 ? `${result.join(', ')}` : '⊥';
         } else {
-            document.getElementById('visualization-result').innerHTML = result === "[]" ? '$$\\bot$$' : `$$\\Large{${result}}$$`;
+            document.getElementById('visualization-result').innerHTML = result === "[]" ? '⊥' : `${result}`;
         }
 
         MathJax.typesetPromise();
         drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
 
-        console.log(buildTreeDataCommon(steps))
 
-
-
-        buttonLaTeX.onclick = function() {
-            const resolutionTable = document.getElementById('resolution-table-interpretation');
-
-            let tableCode = generateLatexTable(resolutionTable);
-            console.log(tableCode);
-
-            showModalWithText(tikzCode);
-        };
+        // buttonLaTeX.onclick = function() {
+        //     const resolutionTable = document.getElementById('resolution-table-interpretation');
+        //
+        //     let tableCode = generateLatexTable(resolutionTable);
+        //     console.log(tableCode);
+        //
+        //     showModalWithText(tikzCode, true, true);
+        // };
 
         // Tree LaTeX code
         let tikzCode = buildTikzPictureDynamic(buildTreeDataCommon(steps));
@@ -365,11 +361,11 @@ export function applyResolution() {
         buttonLaTeXDynamic.onclick = function() {
             const selectedMode = document.querySelector('input[name="mode"]:checked').value;
             if (selectedMode === 'tree') {
-                showModalWithText(tikzCode);
+                showModalWithText(tikzCode, true, false);
             } else if (selectedMode === 'table') {
                 const resolutionTable = document.getElementById('resolution-table-interpretation');
                 let tableCode = generateLatexTable(resolutionTable);
-                showModalWithText(tableCode);
+                showModalWithText(tableCode, true, true);
             }
         }
 
@@ -607,7 +603,7 @@ function resolutionExplanation(clauses) {
         if(result.isProved) {
             let tikzCode = buildTikzPicture(treeData);
             buttonLaTeX.onclick = function() {
-                showModalWithText(tikzCode);
+                showModalWithText(tikzCode, true, false);
             };
         }
 
@@ -730,15 +726,42 @@ function updateUIAfterUndoOrRedo() {
         updateResolutionTable(initialClauses);
     }
 
+    // console.log(steps[stepNumber - 1].resolved[0]);
+
+    const clause1 = document.getElementById('clause1');
+    const clause2 = document.getElementById('clause2');
+
+
+    if(stepNumber > 0) {
+        const firstClause = "{" + steps[stepNumber - 1].resolved[0].join(",") + "}";
+        const secondClause = "{" + steps[stepNumber - 1].resolved[1].join(",") + "}";
+
+
+        for (let i = 0; i < clause1.options.length; i++) {
+            if (clause1.options[i].text === firstClause) {
+                clause1.selectedIndex = i;
+                break;
+            }
+        }
+
+        for (let i = 0; i < clause2.options.length; i++) {
+            if (clause2.options[i].text === secondClause) {
+                clause2.selectedIndex = i;
+                break;
+            }
+        }
+
+    }
+
+
     if(steps.length === 0) {
         document.getElementById('visualization-result').innerHTML = '';
     } else if (Array.isArray(steps[steps.length - 1].result)) {
         document.getElementById('visualization-result').innerHTML =
-            steps[steps.length - 1].result.length > 0 ? `$$\\Large{${steps[steps.length - 1].result.join(' \\vee ')}}$$` : '$$\\bot$$';
+            steps[steps.length - 1].result.length > 0 ? `${steps[steps.length - 1].result.join(', ')}` : '⊥';
     } else {
-        document.getElementById('visualization-result').innerHTML = steps[steps.length - 1].result === "[]" ? '$$\\bot$$' : `$$\\Large{${steps[steps.length - 1].result}}$$`;
+        document.getElementById('visualization-result').innerHTML = steps[steps.length - 1].result === "[]" ? '⊥' : `${steps[steps.length - 1].result}`;
     }
-
 
     MathJax.typesetPromise();
 }
@@ -878,12 +901,12 @@ function logicalSyllogismExplanation(explanation) {
     document.getElementById('export-dimacs').addEventListener('click', () => {
         try {
             const dimacsText = clausesToDIMACSCNF(clauses);
-            showModalWithText(dimacsText);
+            showModalWithText(dimacsText, false, false);
         } catch (error) {
             if(whichLanguage === 'sk') {
-                showModalWithText('Chyba prevodu: ' + error.message);
+                showModalWithText('Chyba prevodu: ' + error.message, false, false);
             } else if(whichLanguage === 'en') {
-                showModalWithText('Conversion error ' + error.message);
+                showModalWithText('Conversion error ' + error.message, false, false);
             }
         }
     });
@@ -905,8 +928,10 @@ function startProving() {
         const explanation = divsOfExplanation();
         explanation.resultInterpretation.style.visibility = 'visible';
         explanation.stepsExplanation.style.visibility = 'visible';
-        explanation.dotLines[0].style.visibility = 'hidden';
-        explanation.dotLines[1].style.visibility = 'hidden';
+        if(!isVisibility) {
+            explanation.dotLines[0].style.visibility = 'hidden';
+            explanation.dotLines[1].style.visibility = 'hidden';
+        }
         explanation.buttonLaTeXDynamic.style.visibility = 'hidden';
         explanation.buttonSVGDynamic.style.visibility = 'hidden';
 
@@ -947,7 +972,7 @@ function changeLanguageOfFormulaExplanation(explanation) {
     }
 
     if (!isDIMACS) {
-            generateHeadersOfTheExplanation(explanation, true);
+        generateHeadersOfTheExplanation(explanation, true);
     }
 
 }
@@ -1011,14 +1036,7 @@ toggleButton.addEventListener('click', () => {
     isVisible = !isVisible;
     resolutionContainer.style.display = isVisible ? 'block' : 'none';
 
-    toggleButton.innerHTML = isVisible ? '<svg id=\'collapseButtontwo\' class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">\n' +
-        '  <path stroke="#094e86" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 15 7-7 7 7"/>\n' +
-        '</svg>\n' :
-
-
-        ' <svg id=\'collapseButton\' class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">\n' +
-        '            <path stroke="#094e86" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>\n' +
-        '            </svg>';
+    toggleButton.innerHTML = isVisible ? "Skryť kroky" : "Zobraziť kroky";
 });
 
 
@@ -1066,9 +1084,9 @@ function formulaExplanation(explanation) {
     document.getElementById('export-dimacs').addEventListener('click', () => {
         try {
             const dimacsText = clausesToDIMACSCNF(clauses);
-            showModalWithText(dimacsText);
+            showModalWithText(dimacsText, false, false);
         } catch (error) {
-            showModalWithText('Chyba prevodu: ' + error.message);
+            showModalWithText('Chyba prevodu: ' + error.message, false, false);
         }
     });
 
@@ -1125,12 +1143,63 @@ function enablePointerEvents(enable) {
     document.getElementById("openFile").style.pointerEvents = action;
 }
 
-function showModalWithText(text) {
+function showModalWithText(text, ifLaTeX, ifTable) {
     const modal = document.getElementById("myModalDIMACS");
     const textElement = document.getElementById("modalText");
     const copyButton = document.getElementById("copyButton");
+    const toggle_strom = document.getElementById("toggle-tree-latex");
+    const latexToggle = document.getElementById('toggle-latex');
 
-    textElement.textContent = text;
+    const barOptions = document.getElementById('bar-options-latex');
+    const modeSwitches = barOptions.querySelectorAll('input[name="mode"]');
+
+    // document.getElementById('tree-option-latex').click();
+
+    const barOptions2 = document.getElementById('bar-options');
+    let selectedMode;
+
+
+    if(ifLaTeX) {
+        barOptions.style.display = 'block';
+        selectedMode = barOptions2.querySelector('input[name="mode"]:checked').value;
+        toggle_strom.click();
+    } else {
+        barOptions.style.display = 'none';
+    }
+
+
+    function updateModalText() {
+        const isTreeOptionChecked = document.getElementById('tree-option-latex').checked;
+        let modifiedText = text; // Start with the original text
+
+        if (!isTreeOptionChecked) {
+            if(!ifTable) {
+            modifiedText = "\\documentclass{article}\n\n" +
+                "\\usepackage{tikz}\n" +
+                "\\usepackage{amssymb}\n\n" +
+                "\\begin{document}\n\n" +
+                modifiedText + "\n\n" +
+                "\\end{document}";
+            } else {
+                modifiedText = "\\documentclass{article}\n\n" +
+                    "\\begin{document}\n\n" +
+                    modifiedText + "\n\n" +
+                    "\\end{document}";
+            }
+        }
+        textElement.textContent = "";
+        textElement.textContent = modifiedText;
+    }
+
+    // Initial text display (assumes desired format on opening)
+    updateModalText();
+
+    // Add event listener to the LaTeX toggle
+    // latexToggle.addEventListener('change', updateModalText);
+
+    modeSwitches.forEach(function (switcher) {
+        switcher.addEventListener('change', updateModalText);
+    });
 
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
@@ -1153,6 +1222,13 @@ function showModalWithText(text) {
 
     span.onclick = function() {
         modal.style.display = "none";
+        document.getElementById('toggle-table').click();
+        if(selectedMode === 'tree') {
+            document.getElementById('toggle-tree').click();
+        } else {
+            document.getElementById('toggle-table').click();
+
+        }
     }
 
     window.onclick = function(event) {
@@ -1308,6 +1384,8 @@ document.getElementById('undo').addEventListener('click', undo);
 
 document.getElementById('redo').addEventListener('click', redo);
 
+export let isVisibility = false;
+
 document.getElementById('toggleVisibilityButton').addEventListener('click', function() {
     const resolutionContainer = document.getElementById('resolution-container');
     const treeContainer = document.getElementById('tree-container');
@@ -1318,14 +1396,12 @@ document.getElementById('toggleVisibilityButton').addEventListener('click', func
     if (treeContainer.style.display === "none") {
         treeContainer.style.display = "block";
         if(whichLanguage === "sk") {
-            button.textContent = "Skryť kroky";
+            button.textContent = "Skryť strom";
         } else if(whichLanguage === "en") {
-            button.textContent = "Hide steps";
+            button.textContent = "Hide tree";
         }
 
-        toggleButton.innerHTML = ' <svg id=\'collapseButton\' class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">\n' +
-            '            <path stroke="#094e86" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>\n' +
-            '            </svg>';
+        toggleButton.innerHTML = 'Zobraziť kroky';
 
         button.style.backgroundColor = 'white';
         button.style.color = '#094e86';
@@ -1353,6 +1429,8 @@ document.getElementById('toggleVisibilityButton').addEventListener('click', func
              }
         });
 
+        isVisibility = true;
+
 
         setTimeout(() => {
             resolutionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1360,22 +1438,25 @@ document.getElementById('toggleVisibilityButton').addEventListener('click', func
 
     } else {
         resolutionContainer.style.display = "none";
-        console.log("yayya")
         isVisible = false;
         treeContainer.style.display = "none";
         if(whichLanguage === "sk") {
-            button.textContent = "Zobraziť kroky";
+            button.textContent = "Zobraziť strom";
         } else if(whichLanguage === "en") {
-            button.textContent = "Show steps";
+            button.textContent = "Show tree";
         }
+        isVisibility = false;
+
 
         collapse_steps.style.display = 'none';
 
         button.style.backgroundColor = '#094e86';
         button.style.color = 'white';
         button.style.border = 'none';
-        dotLines[0].style.visibility = 'hidden';
-        dotLines[1].style.visibility = 'hidden';
+        if(!isVisibility) {
+            dotLines[0].style.visibility = 'hidden';
+            dotLines[1].style.visibility = 'hidden';
+        }
         buttonSVG.style.display = 'none';
         buttonLaTeX.style.display = 'none';
     }
@@ -1458,7 +1539,9 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    const modeSwitches = document.querySelectorAll('input[name="mode"]');
+    const barOptions = document.getElementById('bar-options');
+    const modeSwitches = barOptions.querySelectorAll('input[name="mode"]');
+
 
     function updateVisibility() {
         updateTableTreeFunctionality();

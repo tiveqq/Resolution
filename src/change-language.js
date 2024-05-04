@@ -43,11 +43,13 @@ export const translations = {
         'applyResolutionButton': 'Použiť pravidlo rezolúcie',
         'aktualny-zoznam1': 'Aktuálne klauzuly',
         'possible-interactions': "Možné interakcie",
-        'balik': "Ak chcete vytvoriť strom v LaTeXe, musíte použiť balík:",
+        'balik': "Ak chcete vytvoriť strom v LaTeXe, musíte použiť balíky:",
         'first-table': "Grécke symboly",
         'second-table': "Logické spojky a iné",
         'shpecialn': "Špeciálny symbol",
         'zapis-late': "Zápis LaTeX",
+        'undoText': "Späť",
+        'redoText': 'Vpred'
     },
     'en': {
         'general': 'General',
@@ -93,11 +95,13 @@ export const translations = {
         'applyResolutionButton': 'Apply the resolution rule',
         'aktualny-zoznam1': 'Actual clauses',
         'possible-interactions': "Possible interactions",
-        'balik': "To create a tree in LaTeX, you need to use the package:",
+        'balik': "To create a tree in LaTeX, you need to use this packages:",
         'first-table': "Greek symbols",
         'second-table': "Logical connectives and others",
         'shpecialn': "Special symbol",
-        'zapis-late': "LaTeX notation"
+        'zapis-late': "LaTeX notation",
+        'undoText': 'Undo',
+        'redoText': 'Redo'
     }
 };
 
