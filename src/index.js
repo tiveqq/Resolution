@@ -6,7 +6,7 @@ import Formula from "./cnf-converter"
 import { initializeMonacoEditor, getModel, getEditor, displayError, monaco } from './monaco-editor';
 import {
     buildTreeDataCommon, buildTreeDataLinear, buildTikzPicture,
-    drawTree, downloadSVG, clearTree, buildTikzPictureDynamic, setIfRoot
+    drawTree, downloadSVG, clearTree, buildTikzPictureDynamic, setIfRoot, buildTreeDataDynamically
 } from "./proof-tree"
 import {
     createResolutionStep, divsOfExplanation, clearTableResolutionInterpretation,
@@ -343,19 +343,11 @@ export function applyResolution() {
         }
 
         MathJax.typesetPromise();
-        steps.forEach(step => console.log(step))
+        // steps.forEach(step => console.log(step));
+
         drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
-        console.log(buildTreeDataCommon(steps))
-
-
-        // buttonLaTeX.onclick = function() {
-        //     const resolutionTable = document.getElementById('resolution-table-interpretation');
-        //
-        //     let tableCode = generateLatexTable(resolutionTable);
-        //     console.log(tableCode);
-        //
-        //     showModalWithText(tikzCode, true, true);
-        // };
+        // console.log(steps)
+        // stepsWithIds.forEach(step => console.log(step));
 
         // Tree LaTeX code
         let tikzCode = buildTikzPictureDynamic(buildTreeDataCommon(steps));
@@ -363,11 +355,11 @@ export function applyResolution() {
         buttonLaTeXDynamic.onclick = function() {
             const selectedMode = document.querySelector('input[name="mode"]:checked').value;
             if (selectedMode === 'tree') {
-                showModalWithText(tikzCode, true, false);
+                showModalWithText(tikzCode, true, false, false);
             } else if (selectedMode === 'table') {
                 const resolutionTable = document.getElementById('resolution-table-interpretation');
                 let tableCode = generateLatexTable(resolutionTable);
-                showModalWithText(tableCode, true, true);
+                showModalWithText(tableCode, true, true, false);
             }
         }
 
@@ -605,7 +597,7 @@ function resolutionExplanation(clauses) {
         if(result.isProved) {
             let tikzCode = buildTikzPicture(treeData);
             buttonLaTeX.onclick = function() {
-                showModalWithText(tikzCode, true, false);
+                showModalWithText(tikzCode, true, false, false);
             };
         }
 
@@ -903,12 +895,12 @@ function logicalSyllogismExplanation(explanation) {
     document.getElementById('export-dimacs').addEventListener('click', () => {
         try {
             const dimacsText = clausesToDIMACSCNF(clauses);
-            showModalWithText(dimacsText, false, false);
+            showModalWithText(dimacsText, false, false, true);
         } catch (error) {
             if(whichLanguage === 'sk') {
-                showModalWithText('Chyba prevodu: ' + error.message, false, false);
+                showModalWithText('Chyba prevodu: ' + error.message, false, false, false);
             } else if(whichLanguage === 'en') {
-                showModalWithText('Conversion error ' + error.message, false, false);
+                showModalWithText('Conversion error ' + error.message, false, false, false);
             }
         }
     });
@@ -1086,9 +1078,9 @@ function formulaExplanation(explanation) {
     document.getElementById('export-dimacs').addEventListener('click', () => {
         try {
             const dimacsText = clausesToDIMACSCNF(clauses);
-            showModalWithText(dimacsText, false, false);
+            showModalWithText(dimacsText, false, false, true);
         } catch (error) {
-            showModalWithText('Chyba prevodu: ' + error.message, false, false);
+            showModalWithText('Chyba prevodu: ' + error.message, false, false, false);
         }
     });
 
@@ -1145,12 +1137,11 @@ function enablePointerEvents(enable) {
     document.getElementById("openFile").style.pointerEvents = action;
 }
 
-function showModalWithText(text, ifLaTeX, ifTable) {
+function showModalWithText(text, ifLaTeX, ifTable, ifDimacs) {
     const modal = document.getElementById("myModalDIMACS");
     const textElement = document.getElementById("modalText");
     const copyButton = document.getElementById("copyButton");
     const toggle_strom = document.getElementById("toggle-tree-latex");
-    const latexToggle = document.getElementById('toggle-latex');
 
     const barOptions = document.getElementById('bar-options-latex');
     const modeSwitches = barOptions.querySelectorAll('input[name="mode"]');
@@ -1174,7 +1165,7 @@ function showModalWithText(text, ifLaTeX, ifTable) {
         const isTreeOptionChecked = document.getElementById('tree-option-latex').checked;
         let modifiedText = text; // Start with the original text
 
-        if (!isTreeOptionChecked) {
+        if (!isTreeOptionChecked && !ifDimacs) {
             if(!ifTable) {
             modifiedText = "\\documentclass{article}\n\n" +
                 "\\usepackage{tikz}\n" +

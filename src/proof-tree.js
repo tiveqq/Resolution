@@ -1,4 +1,5 @@
 export function buildTreeDataCommon(steps) {
+    // console.log(steps);
     const lastStep = steps[steps.length - 1];
     const rootNode = {
         name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : lastStep.result,
@@ -12,32 +13,30 @@ export function buildTreeDataCommon(steps) {
         });
     });
 
+    rootNode.children.forEach(childNode => {
+        addChildrenToNode(childNode, steps.length - 2);
+    });
+
     function addChildrenToNode(node, stepIndex) {
         if (stepIndex < 0) return;
 
-        const currentStep = steps.find(step => (Array.isArray(step.result) ? step.result.join(', ') : step.result) === node.name.replace(/[{}]/g, ''));
+        const currentIndex = steps.findIndex(step => {
+            const nodeName = Array.isArray(step.result) ? step.result.join(', ') : step.result;
+            return nodeName === node.name.replace(/[{}]/g, '');
+        });
 
-        if (currentStep) {
-
+        if (currentIndex !== -1) {
+            const currentStep = steps[currentIndex];
             currentStep.resolved.forEach(resolved => {
-                const childNode = {
-                    name: `{${resolved.join(', ')}}`,
-                    children: []
-                };
+                const childNode = { name: `{${resolved.join(', ')}}`, children: [] };
                 node.children.push(childNode);
                 addChildrenToNode(childNode, stepIndex - 1);
             });
         }
     }
 
-    rootNode.children.forEach(childNode => {
-        addChildrenToNode(childNode, steps.length - 2);
-    });
-
     return rootNode;
 }
-
-
 
 export function buildTreeDataLinear(steps) {
     const lastStep = steps[steps.length - 1];
