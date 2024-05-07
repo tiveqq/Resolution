@@ -343,7 +343,9 @@ export function applyResolution() {
         }
 
         MathJax.typesetPromise();
+        steps.forEach(step => console.log(step))
         drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
+        console.log(buildTreeDataCommon(steps))
 
 
         // buttonLaTeX.onclick = function() {

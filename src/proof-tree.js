@@ -37,6 +37,8 @@ export function buildTreeDataCommon(steps) {
     return rootNode;
 }
 
+
+
 export function buildTreeDataLinear(steps) {
     const lastStep = steps[steps.length - 1];
     const rootNode = {
