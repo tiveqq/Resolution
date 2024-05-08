@@ -49,7 +49,9 @@ export const translations = {
         'shpecialn': "Špeciálny symbol",
         'zapis-late': "Zápis LaTeX",
         'undoText': "Späť",
-        'redoText': 'Vpred'
+        'redoText': 'Vpred',
+        'toggle-tree-latex': 'Kroky',
+        'toggle-table-latex': 'Kompletný LaTeX'
     },
     'en': {
         'general': 'General',
@@ -101,7 +103,9 @@ export const translations = {
         'shpecialn': "Special symbol",
         'zapis-late': "LaTeX notation",
         'undoText': 'Undo',
-        'redoText': 'Redo'
+        'redoText': 'Redo',
+        'toggle-tree-latex': 'Steps',
+        'toggle-latex': 'Full LaTeX'
     }
 };
 

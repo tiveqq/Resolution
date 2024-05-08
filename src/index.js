@@ -345,12 +345,19 @@ export function applyResolution() {
         MathJax.typesetPromise();
         // steps.forEach(step => console.log(step));
 
+        // drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
+
+        for (let i = steps.length - 1; i >= 0; i--) {
+            steps[i].id = steps.length - i; // Start from 1 for the last element
+        }
+
         drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
+
         // console.log(steps)
         // stepsWithIds.forEach(step => console.log(step));
 
         // Tree LaTeX code
-        let tikzCode = buildTikzPictureDynamic(buildTreeDataCommon(steps));
+        let tikzCode = buildTreeDataCommon(buildTreeDataDynamically(steps));
 
         buttonLaTeXDynamic.onclick = function() {
             const selectedMode = document.querySelector('input[name="mode"]:checked').value;
@@ -716,7 +723,7 @@ function updateUIAfterUndoOrRedo() {
     clearTableResolutionInterpretation();
 
     if(steps.length !== 0) {
-        drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
+        drawTree(buildTreeDataDynamically(steps), "#dynamic-tree-container");
         updateResolutionTable(initialClauses);
     }
 
@@ -1151,7 +1158,6 @@ function showModalWithText(text, ifLaTeX, ifTable, ifDimacs) {
     const barOptions2 = document.getElementById('bar-options');
     let selectedMode;
 
-
     if(ifLaTeX) {
         barOptions.style.display = 'block';
         selectedMode = barOptions2.querySelector('input[name="mode"]:checked').value;
@@ -1159,7 +1165,6 @@ function showModalWithText(text, ifLaTeX, ifTable, ifDimacs) {
     } else {
         barOptions.style.display = 'none';
     }
-
 
     function updateModalText() {
         const isTreeOptionChecked = document.getElementById('tree-option-latex').checked;

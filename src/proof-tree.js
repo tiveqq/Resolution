@@ -1,5 +1,4 @@
 export function buildTreeDataCommon(steps) {
-    // console.log(steps);
     const lastStep = steps[steps.length - 1];
     const rootNode = {
         name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : lastStep.result,
@@ -20,18 +19,58 @@ export function buildTreeDataCommon(steps) {
     function addChildrenToNode(node, stepIndex) {
         if (stepIndex < 0) return;
 
-        const currentIndex = steps.findIndex(step => {
-            const nodeName = Array.isArray(step.result) ? step.result.join(', ') : step.result;
-            return nodeName === node.name.replace(/[{}]/g, '');
-        });
+        const currentStep = steps.find(step => (Array.isArray(step.result) ? step.result.join(', ') : step.result) === node.name.replace(/[{}]/g, ''));
 
-        if (currentIndex !== -1) {
-            const currentStep = steps[currentIndex];
+        if (currentStep) {
+
             currentStep.resolved.forEach(resolved => {
-                const childNode = { name: `{${resolved.join(', ')}}`, children: [] };
+                const childNode = {
+                    name: `{${resolved.join(', ')}}`,
+                    children: []
+                };
                 node.children.push(childNode);
                 addChildrenToNode(childNode, stepIndex - 1);
             });
+        }
+    }
+
+    rootNode.children.forEach(childNode => {
+        addChildrenToNode(childNode, steps.length - 2);
+    });
+
+    return rootNode;
+}
+
+export function buildTreeDataDynamically(steps) {
+    const lastStep = steps[steps.length - 1];
+
+    const rootNode = {
+        name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : lastStep.result,
+        children: [],
+        id: lastStep.id
+    };
+
+    let neededID = lastStep.id;
+
+    addChildrenToNode(rootNode, steps.length - 1);
+
+    function addChildrenToNode(node, stepIndex) {
+        if (stepIndex < 0) return;
+
+        const currentStep = steps.find(step => node.id === step.id);
+
+        if (currentStep) {
+            currentStep.resolved.forEach(resolved => {
+                neededID++;
+                const childNode = {
+                    name: `{${resolved.join(', ')}}`,
+                    children: [],
+                    id: neededID
+                };
+                node.children.push(childNode);
+                addChildrenToNode(childNode, stepIndex - 1);
+            });
+
         }
     }
 
