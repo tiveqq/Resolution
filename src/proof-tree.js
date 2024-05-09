@@ -34,48 +34,44 @@ export function buildTreeDataCommon(steps) {
         }
     }
 
-    rootNode.children.forEach(childNode => {
-        addChildrenToNode(childNode, steps.length - 2);
-    });
-
     return rootNode;
 }
 
-export function buildTreeDataDynamically(steps) {
-    const lastStep = steps[steps.length - 1];
-
-    const rootNode = {
-        name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : lastStep.result,
-        children: [],
-        id: lastStep.id
-    };
-
-    let neededID = lastStep.id;
-
-    addChildrenToNode(rootNode, steps.length - 1);
-
-    function addChildrenToNode(node, stepIndex) {
-        if (stepIndex < 0) return;
-
-        const currentStep = steps.find(step => node.id === step.id);
-
-        if (currentStep) {
-            currentStep.resolved.forEach(resolved => {
-                neededID++;
-                const childNode = {
-                    name: `{${resolved.join(', ')}}`,
-                    children: [],
-                    id: neededID
-                };
-                node.children.push(childNode);
-                addChildrenToNode(childNode, stepIndex - 1);
-            });
-
-        }
-    }
-
-    return rootNode;
-}
+// export function buildTreeDataDynamically(steps) {
+//     const lastStep = steps[steps.length - 1];
+//
+//     const rootNode = {
+//         name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : lastStep.result,
+//         children: [],
+//         id: lastStep.id
+//     };
+//
+//     let neededID = lastStep.id;
+//
+//     addChildrenToNode(rootNode, steps.length - 1);
+//
+//     function addChildrenToNode(node, stepIndex) {
+//         if (stepIndex < 0) return;
+//
+//         const currentStep = steps.find(step => node.id === step.id);
+//
+//         if (currentStep) {
+//             currentStep.resolved.forEach(resolved => {
+//                 neededID++;
+//                 const childNode = {
+//                     name: `{${resolved.join(', ')}}`,
+//                     children: [],
+//                     id: neededID
+//                 };
+//                 node.children.push(childNode);
+//                 addChildrenToNode(childNode, stepIndex - 1);
+//             });
+//
+//         }
+//     }
+//
+//     return rootNode;
+// }
 
 export function buildTreeDataLinear(steps) {
     const lastStep = steps[steps.length - 1];

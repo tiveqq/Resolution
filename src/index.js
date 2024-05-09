@@ -6,7 +6,7 @@ import Formula from "./cnf-converter"
 import { initializeMonacoEditor, getModel, getEditor, displayError, monaco } from './monaco-editor';
 import {
     buildTreeDataCommon, buildTreeDataLinear, buildTikzPicture,
-    drawTree, downloadSVG, clearTree, buildTikzPictureDynamic, setIfRoot, buildTreeDataDynamically
+    drawTree, downloadSVG, clearTree, buildTikzPictureDynamic, setIfRoot
 } from "./proof-tree"
 import {
     createResolutionStep, divsOfExplanation, clearTableResolutionInterpretation,
@@ -345,19 +345,19 @@ export function applyResolution() {
         MathJax.typesetPromise();
         // steps.forEach(step => console.log(step));
 
-        // drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
-
-        for (let i = steps.length - 1; i >= 0; i--) {
-            steps[i].id = steps.length - i; // Start from 1 for the last element
-        }
-
         drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
+
+        // for (let i = steps.length - 1; i >= 0; i--) {
+        //     steps[i].id = steps.length - i; // Start from 1 for the last element
+        // }
+
+        // drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
 
         // console.log(steps)
         // stepsWithIds.forEach(step => console.log(step));
 
         // Tree LaTeX code
-        let tikzCode = buildTreeDataCommon(buildTreeDataDynamically(steps));
+        let tikzCode = buildTikzPictureDynamic(buildTreeDataCommon(steps));
 
         buttonLaTeXDynamic.onclick = function() {
             const selectedMode = document.querySelector('input[name="mode"]:checked').value;
@@ -723,7 +723,7 @@ function updateUIAfterUndoOrRedo() {
     clearTableResolutionInterpretation();
 
     if(steps.length !== 0) {
-        drawTree(buildTreeDataDynamically(steps), "#dynamic-tree-container");
+        drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
         updateResolutionTable(initialClauses);
     }
 
