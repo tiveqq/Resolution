@@ -453,7 +453,6 @@ export function generateLatexTable(table) {
     return latexCode;
 }
 
-
 export function updateResolutionTable(initialClauses) {
     const tableContainer = document.getElementById("table-resolution-interpretation");
     tableContainer.innerHTML = "";

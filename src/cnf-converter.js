@@ -30,6 +30,7 @@ export default class Formula {
     }
 
     evaluate(trueVariables) {
+
     }
     toString() {
         return this.#stringifyArgs().join(this.constructor.symbol);

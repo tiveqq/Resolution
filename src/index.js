@@ -564,7 +564,6 @@ function resolutionExplanation(clauses) {
 
     resultOfResolutionMethod = result;
 
-
     clearTree("#dynamic-tree-container");
     clearTableResolutionInterpretation();
     clearTree("#tree-container");

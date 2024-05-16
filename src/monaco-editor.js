@@ -68,6 +68,20 @@ export function initializeMonacoEditor() {
                     detail: '∨',
                 },
                 {
+                    label: '\\land',
+                    kind: monaco.languages.CompletionItemKind.Operator,
+                    insertText: '∧',
+                    range: getRange(position),
+                    detail: '∧',
+                },
+                {
+                    label: '\\lor',
+                    kind: monaco.languages.CompletionItemKind.Operator,
+                    insertText: '∨',
+                    range: getRange(position),
+                    detail: '∨',
+                },
+                {
                     label: '\\neg',
                     kind: monaco.languages.CompletionItemKind.Operator,
                     insertText: '¬',
