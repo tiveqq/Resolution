@@ -6,7 +6,7 @@ import Formula from "./cnf-converter"
 import { initializeMonacoEditor, getModel, getEditor, displayError, monaco } from './monaco-editor';
 import {
     buildTreeDataCommon, buildTreeDataLinear, buildTikzPicture,
-    drawTree, downloadSVG, clearTree, buildTikzPictureDynamic, setIfRoot
+    drawTree, downloadSVG, clearTree, buildTikzPictureDynamic, setIfRoot, buildTreeDataDynamically
 } from "./proof-tree"
 import {
     createResolutionStep, divsOfExplanation, clearTableResolutionInterpretation,
@@ -345,16 +345,75 @@ export function applyResolution() {
         MathJax.typesetPromise();
         // steps.forEach(step => console.log(step));
 
-        drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
 
-        // for (let i = steps.length - 1; i >= 0; i--) {
-        //     steps[i].id = steps.length - i; // Start from 1 for the last element
+        // const reversedSteps = steps.slice().reverse();
+        //
+        // function transformSteps(steps) {
+        //     let transformed = null;
+        //     for (let i = steps.length - 1; i >= 0; i--) {
+        //         transformed = { ...steps[i], nextStep: transformed };
+        //     }
+        //     return transformed;
+        // }
+        // const transformedSteps = transformSteps(reversedSteps);
+
+        // function logSteps(step, level = 0) {
+        //     console.log(step)
+        //
+        //     if (!step) return;
+        //
+        //
+        //     // Виводимо інформацію про поточний крок
+        //     console.log(`Level ${level}:`);
+        //     if (step.resolved) {
+        //         console.log(`  Resolved: ${JSON.stringify(step.resolved)}`);
+        //     }
+        //     if (step.result) {
+        //         console.log(`  Result: ${JSON.stringify(step.result)}`);
+        //     }
+        //
+        //     // Рекурсивно проходимо по наступному кроку
+        //     if (step.nextStep) {
+        //     logSteps(step.nextStep, level + 1);
+        //     }
         // }
 
-        // drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
+// Запускаємо рекурсію
+//         logSteps(transformedSteps);
 
-        // console.log(steps)
-        // stepsWithIds.forEach(step => console.log(step));
+        // console.log(transformedSteps);
+        // console.log(JSON.stringify(transformedSteps, null, 2));
+
+        // const stepsWithId = steps.slice();
+
+        // for (let i = steps.length - 1; i >= 0; i--) {
+        //     stepsWithId[i].id = steps.length - i; // Start from 1 for the last element
+        // }
+
+        for (let i = steps.length - 1; i >= 0; i--) {
+            if (i === steps.length - 1) {
+                // Починаємо з 1 для останнього елементу
+                steps[i].id = 1;
+            } else {
+                let found = false;
+                // Перевіряємо, чи є steps.result поточного кроку у steps.resolved наступного кроку
+                for (let j = 0; j < steps[i + 1].resolved.length; j++) {
+                    if (steps[i].result.join(',') === steps[i + 1].resolved[j].join(',')) {
+                        steps[i].id = steps[i + 1].id + 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    steps[i].id = steps[i + 1].id;
+                }
+            }
+        }
+
+
+        drawTree(buildTreeDataDynamically(steps), "#dynamic-tree-container");
+
+        // stepsWithId.forEach(step => console.log(step));
 
         // Tree LaTeX code
         let tikzCode = buildTikzPictureDynamic(buildTreeDataCommon(steps));
@@ -597,6 +656,7 @@ function resolutionExplanation(clauses) {
         if (isLinearResolution) {
             treeData = buildTreeDataLinear(result.steps);
         } else if (isWithoutStrategy || isUnitResolution) {
+
             treeData = buildTreeDataCommon(result.steps);
         }
 
@@ -722,7 +782,26 @@ function updateUIAfterUndoOrRedo() {
     clearTableResolutionInterpretation();
 
     if(steps.length !== 0) {
-        drawTree(buildTreeDataCommon(steps), "#dynamic-tree-container");
+        for (let i = steps.length - 1; i >= 0; i--) {
+            if (i === steps.length - 1) {
+                // Починаємо з 1 для останнього елементу
+                steps[i].id = 1;
+            } else {
+                let found = false;
+                // Перевіряємо, чи є steps.result поточного кроку у steps.resolved наступного кроку
+                for (let j = 0; j < steps[i + 1].resolved.length; j++) {
+                    if (steps[i].result.join(',') === steps[i + 1].resolved[j].join(',')) {
+                        steps[i].id = steps[i + 1].id + 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    steps[i].id = steps[i + 1].id;
+                }
+            }
+        }
+        drawTree(buildTreeDataDynamically(steps), "#dynamic-tree-container");
         updateResolutionTable(initialClauses);
     }
 

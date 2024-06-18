@@ -1,3 +1,50 @@
+export function buildTreeDataDynamically(steps) {
+    let currentID = 3;
+
+    const lastStep = steps[steps.length - 1];
+    const rootNode = {
+        id: 1,
+        name: (Array.isArray(lastStep.result) && lastStep.result.length === 0) || lastStep.result === '[]' ? "□" : lastStep.result,
+        children: []
+    };
+
+    lastStep.resolved.forEach(resolved => {
+        rootNode.children.push({
+            id: 2,
+            name: `{${resolved.join(', ')}}`,
+            children: []
+        });
+    });
+
+
+
+    rootNode.children.forEach(childNode => {
+        addChildrenToNode(childNode, steps.length - 2);
+    });
+
+
+    function addChildrenToNode(node, stepIndex) {
+        if (stepIndex < 0) return;
+
+        const currentStep = steps.find(step => (step.id) === node.id && (Array.isArray(step.result) ? step.result.join(', ') : step.result) === node.name.replace(/[{}]/g, ''));
+        if (currentStep) {
+
+            currentStep.resolved.forEach(resolved => {
+                const childNode = {
+                    id: currentStep.id + 1,
+                    name: `{${resolved.join(', ')}}`,
+                    children: []
+                };
+                node.children.push(childNode);
+
+                addChildrenToNode(childNode, stepIndex - 1);
+
+            });
+        }
+    }
+    return rootNode;
+}
+
 export function buildTreeDataCommon(steps) {
     const lastStep = steps[steps.length - 1];
     const rootNode = {
@@ -36,6 +83,9 @@ export function buildTreeDataCommon(steps) {
 
     return rootNode;
 }
+
+
+
 export function buildTreeDataLinear(steps) {
     const lastStep = steps[steps.length - 1];
     const rootNode = {

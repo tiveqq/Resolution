@@ -51,7 +51,9 @@ export const translations = {
         'undoText': "Späť",
         'redoText': 'Vpred',
         'toggle-tree-latex': 'Kroky',
-        'toggle-table-latex': 'Kompletný LaTeX'
+        'toggle-table-latex': 'Kompletný LaTeX',
+        'strom-package': 'Dôkazový strom',
+        'strom-description': 'S vytvorenými dôkazovými stromami môžete interagovať: priblíženie, oddialenie, presun stromu a jeho jednotlivých uzlov.'
     },
     'en': {
         'general': 'General',
@@ -105,7 +107,9 @@ export const translations = {
         'undoText': 'Undo',
         'redoText': 'Redo',
         'toggle-tree-latex': 'Steps',
-        'toggle-latex': 'Full LaTeX'
+        'toggle-latex': 'Full LaTeX',
+        'strom-package': 'Proof tree',
+        'strom-description': 'You can interact with the created proof trees: zoom in, zoom out, move the tree and its individual nodes.'
     }
 };
 

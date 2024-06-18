@@ -625,7 +625,7 @@ select {
     width: 70%;
 }
 
-#first-table, #second-table, #possible-interactions, #latex-package {
+#first-table, #second-table, #possible-interactions, #latex-package, #strom-package {
     color: #094e86;
     font-weight: bold;
     font-size: 20px;
